@@ -31,6 +31,8 @@ module.exports = {
   productionSourceMap: false,
   devServer: (() => {
     if (process.env.NODE_ENV === 'dev') {
+      return { proxy: 'http://localhost:8999' }
+    } else {
       return { proxy: 'https://sanguo.q0studio.com:8223' }
     }
   })(),

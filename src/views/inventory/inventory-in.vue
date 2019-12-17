@@ -2,8 +2,8 @@
   <div class="app-container">
     <div class="filter-container">
       <h2>筛选结果</h2>
-      <el-input v-model="listQuery.inventory_in_id" placeholder="入库批次" style="width: 150px;" class="filter-item"/>
-      <el-select v-model="listQuery.inventory_in_type" placeholder="入库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-input v-model="listQuery.inventory_id" placeholder="入库批次" style="width: 150px;" class="filter-item"/>
+      <el-select v-model="listQuery.inventory_type" placeholder="入库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in inventoryTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
       <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
@@ -36,7 +36,7 @@
     >
       <el-table-column label="入库批次ID" prop="id" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.inventory_in_id }}</span>
+          <span>{{ row.inventory_id }}</span>
         </template>
       </el-table-column>
       <el-table-column label="入库类型" prop="inventory_type" width="100px" align="center">
@@ -97,7 +97,7 @@
         <div>
           <h3 style="display: inline-block; width: 100px;"> 入库类型 </h3>
           <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.inventory_in_type" placeholder="选择入库类型">
+            <el-select v-model="temp.inventory_type" placeholder="选择入库类型">
               <el-option v-for="item in inventoryTypes" :key="item.id" :label="item.title" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -166,7 +166,7 @@
 </template>
 
 <script>
-import { fetchAllInventoryIn, getAllInventoryInCount, getAllInventoryInTypes, addNewInventoryIn } from '@/api/inventory'
+import { fetchAllInventorys, getAllInventoryCount, getAllInventoryTpes, addNewInventoryRequest } from '@/api/inventory'
 import { getAllProductType, getProductSubType, getProductBySubType } from '@/api/product'
 
 import waves from '@/directive/waves' // waves directive
@@ -191,8 +191,8 @@ export default {
       selectedProducts: [],
       products: [],
       listQuery: {
-        inventory_in_id: undefined,
-        inventory_in_type: undefined,
+        inventory_id: undefined,
+        inventory_type: undefined,
         page: 1,
         limit: 10,
         product_type: undefined,
@@ -200,7 +200,7 @@ export default {
         product: undefined,
       },
       temp: {
-        inventory_in_type: undefined,
+        inventory_type: undefined,
         products: [{
             product_type: '',
             product_sub_type: '',
@@ -235,7 +235,7 @@ export default {
       this.inventories.forEach(i => {
         let found = false
         g.forEach(t => {
-          if (t.id === i.inventory_in_id) {
+          if (t.id === i.inventory_id) {
             found = true
             t.end++
             t.rowSpan++
@@ -245,7 +245,7 @@ export default {
 
         if (!found) {
           let newT = {
-            id: i.inventory_in_id,
+            id: i.inventory_id,
             start: count,
             end: count+1,
             rowSpan: 1
@@ -259,7 +259,7 @@ export default {
     },
     getInventoryIn() {
       this.listLoading = true
-      fetchAllInventoryIn({ filter_data: this.listQuery })
+      fetchAllInventorys({inventory_type: 1, filter_data: this.listQuery })
         .then(response => {
           this.inventories = response.data
           this.listLoading = false
@@ -274,13 +274,13 @@ export default {
         })
     },
     getInventoryInTypes() {
-      getAllInventoryInTypes()
+      getAllInventoryTpes(1)
         .then(response => {
           this.inventoryTypes = response
         })
     },
     getInventoryInCount() {
-      getAllInventoryInCount()
+      getAllInventoryCount(1)
         .then(response => {
           this.total = response.total
         })
@@ -346,7 +346,7 @@ export default {
       })
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex === 0 || columnIndex === 1 || columnIndex === 2) {
+      if (columnIndex === 0 || columnIndex === 1 || columnIndex === 2 || columnIndex === 9) {
         let data = {
           rowspan: 0,
           colspan: 0
@@ -400,7 +400,7 @@ export default {
       });
   },
   sendAddInventoryRequest() {
-    if (!this.temp.inventory_in_type) {
+    if (!this.temp.inventory_type) {
         this.$message({
           message: '入库类型必须填写',
           type: 'error'
@@ -412,7 +412,7 @@ export default {
         })
       } else {
         let data = {
-          inventory_type: this.temp.inventory_in_type,
+          inventory_type: this.temp.inventory_type,
           account_id: this.id,
           product_data: [],
           note: this.temp.note
@@ -429,7 +429,7 @@ export default {
 
         console.log(data)
         this.listLoading = true
-        addNewInventoryIn(data)
+        addNewInventoryRequest(data)
           .then(response => {
             this.listLoading = false
             this.$alert('库存添加成功', '成功', {
@@ -439,7 +439,7 @@ export default {
                 this.getInventoryIn()
                 this.dialogFormVisible = false;
                 this.temp = {
-                  inventory_in_type: undefined,
+                  inventory_type: undefined,
                   products: [{
                       product_type: '',
                       product_sub_type: '',

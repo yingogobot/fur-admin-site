@@ -1,43 +1,31 @@
 import request from '@/utils/request'
 
-export function fetchAllInventoryIn(data) {
+export function fetchAllInventorys(data) {
   return request({
-    url: '/inventory/all_in?bypass=bypass',
+    url: '/inventory/all_inventorys?bypass=bypass',
     method: 'post',
     data
   })
 }
 
-export function getAllInventoryInCount() {
+export function getAllInventoryCount(typeId) {
+  let data = {inventory_type: typeId}
   return request({
-    url: '/inventory/count_all_in?bypass=bypass',
-    method: 'post'
+    url: '/inventory/count_inventorys?bypass=bypass',
+    method: 'post',
+    data
   })
 }
-
-export function getAllInventoryInTypes() {
+export function getAllInventoryTpes(typeId) {
+  let data = {inventory_type: typeId}
   return request({
-    url: '/inventory/all_in_types?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function fetchAllInventoryOut(data) {
-  return request({
-    url: '/inventory/all_out?bypass=bypass',
+    url: '/inventory/inventory_types?bypass=bypass',
     method: 'post',
     data
   })
 }
 
-export function getAllInventoryOutCount() {
-  return request({
-    url: '/inventory/count_all_out?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function addNewInventoryIn(data) {
+export function addNewInventoryRequest(data) {
   return request({
     url: '/inventory/add?bypass=bypass',
     method: 'post',
@@ -45,38 +33,18 @@ export function addNewInventoryIn(data) {
   })
 }
 
-export function addNewInventoryOut(data) {
+export function getStorage() {
   return request({
-    url: '/inventory/add_out?bypass=bypass',
+    url: '/inventory/storage?bypass=bypass',
+    method: 'post'
+  })
+}
+
+export function getProductStorage(productId) {
+  let data = {product_id: productId}
+  return request({
+    url: '/inventory/storage?bypass=bypass',
     method: 'post',
     data
-  })
-}
-
-export function getAllResalers() {
-  return request({
-    url: '/inventory/all_resalers?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function getAllSalesChannel() {
-  return request({
-    url: '/inventory/all_sales_channel?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function getAllEvents() {
-  return request({
-    url: '/inventory/all_events?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function getAllInventoryOutTypes() {
-  return request({
-    url: '/inventory/all_out_types?bypass=bypass',
-    method: 'post'
   })
 }

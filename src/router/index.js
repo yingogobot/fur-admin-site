@@ -6,6 +6,7 @@ Vue.use(Router)
 /* Layout */
 import Layout from '@/layout'
 import inventoryRouter from './modules/inventory'
+import dataRouter from './modules/data'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -34,17 +35,6 @@ import inventoryRouter from './modules/inventory'
  * all roles can be accessed
  */
 export const constantRoutes = [
-  {
-    path: '/redirect',
-    component: Layout,
-    hidden: true,
-    children: [
-      {
-        path: '/redirect/:path*',
-        component: () => import('@/views/redirect/index')
-      }
-    ]
-  },
   {
     path: '/login',
     component: () => import('@/views/login/index'),
@@ -79,6 +69,7 @@ export const constantRoutes = [
     ]
   },
   inventoryRouter,
+  dataRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]
 

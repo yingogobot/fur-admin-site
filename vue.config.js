@@ -30,11 +30,12 @@ module.exports = {
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: (() => {
-    if (process.env.NODE_ENV === 'dev') {
-      return { proxy: 'http://localhost:8999' }
-    } else {
+    console.log('process.env.NODE_ENV === ' + process.env.NODE_ENV)
+    // if (process.env.NODE_ENV === 'dev') {
+    //   return { proxy: 'http://localhost:8999' }
+    // } else {
       return { proxy: 'https://sanguo.q0studio.com:8223' }
-    }
+    // }
   })(),
   configureWebpack: {
     // provide the app's title in webpack's name field, so that

@@ -31,7 +31,7 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     proxy: {
-        '/': {
+        '/fur/': {
             target: 'https://sanguo.q0studio.com:8223',
             changeOrigin: true,
             ws: false

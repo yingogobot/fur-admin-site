@@ -3,8 +3,11 @@
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" autocomplete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <img src="https://furfurland-1256584663.cos.ap-shanghai.myqcloud.com/logo.jpg" class="logo">
+        <h3 class="title">FurFur Land 内部管理系统</h3>
+        <h3 class="title">{{this.version}}</h3>
       </div>
+
 
       <el-form-item prop="username">
         <span class="svg-container">
@@ -45,7 +48,7 @@
         </el-form-item>
       </el-tooltip>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">登录</el-button>
     </el-form>
   </div>
 </template>
@@ -78,7 +81,8 @@ export default {
       loading: false,
       showDialog: false,
       redirect: undefined,
-      otherQuery: {}
+      otherQuery: {},
+      version: ''
     }
   },
   watch: {
@@ -271,6 +275,14 @@ $light_gray:#eee;
     position: absolute;
     right: 0;
     bottom: 6px;
+  }
+
+  .logo{
+    width: 100px;
+    height: 100px;
+    margin: auto;
+    display: block;
+    margin-bottom: 50px;
   }
 
   @media only screen and (max-width: 470px) {

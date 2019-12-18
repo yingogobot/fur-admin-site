@@ -29,14 +29,23 @@ module.exports = {
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
   productionSourceMap: false,
-  devServer: (() => {
-    console.log('process.env.NODE_ENV === ' + process.env.NODE_ENV)
-    // if (process.env.NODE_ENV === 'dev') {
-    //   return { proxy: 'http://localhost:8999' }
-    // } else {
-      return { proxy: 'https://sanguo.q0studio.com:8223' }
-    // }
-  })(),
+  devServer: {
+    proxy: {
+        '/': {
+            target: 'https://sanguo.q0studio.com:8223',
+            changeOrigin: true,
+            ws: false
+        }
+    }
+  },
+  // devServer: (() => {
+  //   console.log('process.env.NODE_ENV === ' + process.env.NODE_ENV)
+  //   // if (process.env.NODE_ENV === 'dev') {
+  //   //   return { proxy: 'http://localhost:8999' }
+  //   // } else {
+  //     return { proxy: 'https://sanguo.q0studio.com:8223' }
+  //   // }
+  // })(),
   configureWebpack: {
     // provide the app's title in webpack's name field, so that
     // it can be accessed in index.html to inject the correct title.

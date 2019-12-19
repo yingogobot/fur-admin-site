@@ -1,4 +1,4 @@
-import { login } from '@/api/user'
+import UserAPI from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import { resetRouter } from '@/router'
 import Cookies from 'js-cookie'
@@ -36,7 +36,7 @@ const actions = {
     console.log(userInfo)
     const { login_name, password } = userInfo
     return new Promise((resolve, reject) => {
-      login({ login_name: login_name.trim(), password: password }).then(response => {
+      UserAPI.login({ login_name: login_name.trim(), password: password }).then(response => {
         state.toke = response.access_token
         state.name = response.name
         state.id = response.id

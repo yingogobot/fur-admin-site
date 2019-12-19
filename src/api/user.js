@@ -1,24 +1,11 @@
-import request from '@/utils/request'
+import $ from './baseApi.js'
 
-export function login(data) {
-  return request({
-    url: '/account/login?bypass=bypass',
-    method: 'post',
-    data
-  })
-}
-
-export function getInfo(token) {
-  return request({
-    url: '/user/info?bypass=bypass',
-    method: 'get',
-    params: { token }
-  })
-}
-
-export function logout() {
-  return request({
-    url: '/user/logout',
-    method: 'post'
-  })
+export default {
+  login(data) {
+    return new Promise((resolve, reject) => {
+      $.post('account/login', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  }
 }

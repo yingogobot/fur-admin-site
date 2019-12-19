@@ -1,24 +1,25 @@
-import request from '@/utils/request'
+import $ from './baseApi.js'
 
-export function getAllProductType() {
-  return request({
-    url: '/product/get_all_product_type?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function getProductSubType(data) {
-  return request({
-    url: '/product/get_product_sub_type?bypass=bypass',
-    method: 'post',
-    data
-  })
-}
-
-export function getProductBySubType(data) {
-  return request({
-    url: '/product/get_product_by_sub_type?bypass=bypass',
-    method: 'post',
-    data
-  })
+export default {
+  getAllProductType() {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_all_product_type')
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getProductSubType(data) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_product_sub_type', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getProductBySubType(data) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_product_by_sub_type', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  }
 }

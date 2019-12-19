@@ -168,15 +168,9 @@
 </template>
 
 <script>
-import { 
-  fetchAllInventorys, 
-  getAllInventoryCount, 
-  getAllInventoryTpes, 
-  addNewInventoryRequest, 
-  getStorage 
-  } 
-  from '@/api/inventory'
-import { getAllProductType, getProductSubType, getProductBySubType } from '@/api/product'
+
+import InventoryAPI from '@/api/inventory.js'
+import ProductAPI from '@/api/product'
 
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
@@ -270,7 +264,8 @@ export default {
     },
     getInventoryOut() {
       this.listLoading = true
-      fetchAllInventorys({inventory_type: 2, filter_data: this.listQuery })
+      this.listQuery.type_id = 2
+      InventoryAPI.fetchAllInventorys(this.listQuery)
         .then(response => {
           this.inventories = response.data
           this.listLoading = false
@@ -285,19 +280,19 @@ export default {
         })
     },
     getInventoryOutTypes() {
-      getAllInventoryTpes(2)
+      InventoryAPI.getAllInventoryTpes(2)
         .then(response => {
           this.inventoryTypes = response
         })
     },
     getInventoryOutCount() {
-      getAllInventoryCount(2)
+      InventoryAPI.getAllInventoryCount(2)
         .then(response => {
           this.total = response.total
         })
     },
     getProductTypes() {
-      getAllProductType()
+      ProductAPI.getAllProductType()
         .then(response => {
           this.productTypes = response
         })
@@ -308,7 +303,7 @@ export default {
       this.productSubTypes = []
       this.selectedProducts = []
       if (productType) {
-        getProductSubType({product_type_id: productType})
+        ProductAPI.getProductSubType({product_type_id: productType})
           .then(response => {
             this.productSubTypes = response
           })
@@ -326,7 +321,7 @@ export default {
       this.listQuery.product = undefined
       this.selectedProducts = []
       if (subType) {
-        getProductBySubType({product_sub_type: subType})
+        ProductAPI.getProductBySubType({product_sub_type: subType})
             .then(response => {
               this.selectedProducts = response
             })
@@ -334,7 +329,7 @@ export default {
     },
     getProductBySubType(subType, item) {
       if (subType) {
-        getProductBySubType({product_sub_type: subType})
+        ProductAPI.getProductBySubType({product_sub_type: subType})
           .then(response => {
             this.products = response
           })
@@ -348,7 +343,7 @@ export default {
       }
     },
     loadProductStorage() {
-      getStorage()
+      InventoryAPI.getStorage()
         .then(response => {
           this.productsStorage = response
         })

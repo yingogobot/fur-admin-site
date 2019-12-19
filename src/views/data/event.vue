@@ -143,7 +143,7 @@
 </template>
 
 <script>
-import { getAllEvents, getEventsCount } from '@/api/event'
+import EventAPI from '@/api/event'
 
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
@@ -181,7 +181,7 @@ export default {
   methods: {
     getEvents() {
       this.listLoading = true
-      getAllEvents(this.listQuery)
+      EventAPI.getAllEvents(this.listQuery)
         .then(response => {
           this.events = response
           this.listLoading = false
@@ -195,7 +195,7 @@ export default {
         })
     },
     getCount() {
-      getEventsCount()
+      EventAPI.getEventsCount()
         .then(response => {
           this.total = response.total
         })

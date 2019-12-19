@@ -1,50 +1,49 @@
-import request from '@/utils/request'
+import $ from './baseApi.js'
 
-export function fetchAllInventorys(data) {
-  return request({
-    url: '/inventory/all_inventorys?bypass=bypass',
-    method: 'post',
-    data
-  })
-}
-
-export function getAllInventoryCount(typeId) {
-  let data = {inventory_type: typeId}
-  return request({
-    url: '/inventory/count_inventorys?bypass=bypass',
-    method: 'post',
-    data
-  })
-}
-export function getAllInventoryTpes(typeId) {
-  let data = {inventory_type: typeId}
-  return request({
-    url: '/inventory/inventory_types?bypass=bypass',
-    method: 'post',
-    data
-  })
-}
-
-export function addNewInventoryRequest(data) {
-  return request({
-    url: '/inventory/add?bypass=bypass',
-    method: 'post',
-    data
-  })
-}
-
-export function getStorage() {
-  return request({
-    url: '/inventory/storage?bypass=bypass',
-    method: 'post'
-  })
-}
-
-export function getProductStorage(productId) {
-  let data = {product_id: productId}
-  return request({
-    url: '/inventory/storage?bypass=bypass',
-    method: 'post',
-    data
-  })
+export default {
+  fetchAllInventorys(data) {
+    return new Promise((resolve, reject) => {
+      $.post('inventory/all_inventorys', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getAllInventoryCount(typeId) {
+    return new Promise((resolve, reject) => {
+      let data = {inventory_type: typeId}
+      $.post('inventory/count_inventorys', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getAllInventoryTpes(typeId) {
+    return new Promise((resolve, reject) => {
+      let data = {inventory_type: typeId}
+      $.post('inventory/inventory_types', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  addNewInventoryRequest(data) {
+    return new Promise((resolve, reject) => {
+      $.post('inventory/add', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getStorage() {
+    return new Promise((resolve, reject) => {
+      $.post('inventory/storage')
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getProductStorage(productId) {
+    return new Promise((resolve, reject) => {
+      let data = {product_id: productId}
+      $.post('inventory/storage', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  }
 }

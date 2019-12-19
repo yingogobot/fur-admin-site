@@ -1,8 +1,11 @@
-import request from '@/utils/request'
+import $ from './baseApi.js'
 
-export function getAllResalers() {
-  return request({
-    url: '/resaler/get_all?bypass=bypass',
-    method: 'post'
-  })
+export default {
+  getAllResalers() {
+    return new Promise((resolve, reject) => {
+      $.post('resaler/get_all')
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  }
 }

@@ -2,7 +2,8 @@ import { getToken } from '@/utils/auth'
 
 export default {
   handleApiUrl(endpoint, params) {
-    let url = process.env.VUE_APP_BASE_API + endpoint
+    console.log(process.env.BASE_URL)
+    let url = process.env.BASE_URL + endpoint
     let paramsString = '?bypass=bypass'
     if (params && params.length > 0) {
       params.forEach((p) => {

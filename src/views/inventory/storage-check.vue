@@ -71,8 +71,8 @@
 </template>
 
 <script>
-import { getStorage } from '@/api/inventory'
-import { getAllProductType, getProductSubType, getProductBySubType } from '@/api/product'
+import InventoryAPI from '@/api/inventory'
+import ProductAPI from '@/api/product'
 
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
@@ -115,7 +115,7 @@ export default {
   methods: {
     getAllStorage() {
       this.listLoading = true
-      getStorage()
+      InventoryAPI.getStorage()
         .then(response => {
           this.inventories = response
           this.listLoading = false
@@ -130,7 +130,7 @@ export default {
         })
     },
     getProductTypes() {
-      getAllProductType()
+      ProductAPI.getAllProductType()
         .then(response => {
           this.productTypes = response
         })
@@ -141,7 +141,7 @@ export default {
       this.productSubTypes = []
       this.selectedProducts = []
       if (productType) {
-        getProductSubType({product_type_id: productType})
+        ProductAPI.getProductSubType({product_type_id: productType})
           .then(response => {
             this.productSubTypes = response
           })
@@ -156,11 +156,10 @@ export default {
       }
     },
     getSelectedProducts(subType) {
-
       this.listQuery.product = undefined
       this.selectedProducts = []
       if (subType) {
-        getProductBySubType({product_sub_type: subType})
+        ProductAPI.getProductBySubType({product_sub_type: subType})
             .then(response => {
               this.selectedProducts = response
             })

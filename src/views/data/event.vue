@@ -1,26 +1,5 @@
 <template>
   <div class="app-container">
-    <div class="filter-container">
-      <!-- <h2>筛选结果</h2>
-      <el-input v-model="listQuery.inventory_in_id" placeholder="入库批次" style="width: 150px;" class="filter-item"/>
-      <el-select v-model="listQuery.inventory_in_type" placeholder="入库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
-        <el-option v-for="item in inventoryTypes" :key="item.id" :label="item.title" :value="item.id" />
-      </el-select>
-      <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
-        <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item.id" />
-      </el-select>
-      <el-select v-model="listQuery.product_sub_type" placeholder="产品分类" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSelectedProducts(listQuery.product_sub_type)">
-        <el-option v-for="item in productSubTypes" :key="item.id" :label="item.title" :value="item.id" />
-      </el-select>
-      <el-select v-model="listQuery.product" placeholder="产品" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
-        <el-option v-for="item in selectedProducts" :key="item.id" :label="item.title" :value="item.id" />
-      </el-select>
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
-        搜索
-      </el-button> -->
-      
-    </div>
-
     <div>
     <h2 class="title">线下活动</h2>
     <el-button class="create-button" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
@@ -61,66 +40,48 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="操作" width="300px" align="center">
+        <template slot-scope="{row}">
+          <el-button type="primary" plain @click="editEvent(row)">编辑</el-button>
+          <el-button type="danger" plain @click="deleteEvent(row)">删除</el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getEvents" />
 
-    <!-- <el-dialog title="添加新入库" :visible.sync="dialogFormVisible" width="80%">
+    <el-dialog title="添加新活动" :visible.sync="dialogFormVisible" width="80%">
       <el-form ref="dataForm"
         :model="temp" 
         label-position="left" 
         label-width="10px" 
         style="margin-left:20px;">
         <div>
-          <h3 style="display: inline-block; width: 100px;"> 入库类型 </h3>
-          <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.inventory_in_type" placeholder="选择入库类型">
-              <el-option v-for="item in inventoryTypes" :key="item.id" :label="item.title" :value="item.id" />
-            </el-select>
-          </el-form-item>
-        </div>
-        <div>
-          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库产品 </h3>
+          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 活动信息 </h3>
           <div style="display: inline-block;">
             <div style=" margin-bottom: 5px;">
-              <div class="input-title">产品类型</div>
-              <div class="input-title">产品分类</div>
-              <div class="input-title">产品名称</div>
-              <div class="input-title">产品规格</div>
-              <div class="input-title">入库数量</div>
-              <div class="input-title">产品成本</div>
+              <div class="input-title">活动名称</div>
+              <div class="input-title">开始日期</div>
+              <div class="input-title">结束日期</div>
             </div>
-            <el-form-item v-for="(item, index) in temp.products" label="" :key="item.id" prop="product" style="margin-bottom: 10px;">
-              <el-select v-model="item.product_type" placeholder="选择产品类型" 
-                clearable style="width: 150px;" class="filter-item" 
-                @change="getSubType(item.product_type, item)"
-                @clear="getSubType(item.product_type, item)">
-                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item.id" />
-              </el-select>
-              <el-select v-model="item.product_sub_type" class="filter-item" placeholder="选择产品分类" 
-                clearable style="width: 150px; margin-left: 10px;" 
-                @change="getProductBySubType(item.product_sub_type, item)" 
-                @clear="getProductBySubType(item.product_sub_type, item)">
-                <el-option v-for="item in productSubTypes" :key="item.id" :label="item.title" :value="item.id" />
-              </el-select>
-              <el-select v-model="item.product_id" class="filter-item" placeholder="选择产品名称" 
-                clearable style="width: 150px; margin-left: 10px;" 
-                @change="readProductInfo(item)"
-                @clear="readProductInfo(item)">
-                <el-option v-for="item in products" :key="item.id" :label="item.title" :value="item.id" />
-              </el-select>
-              <el-input placeholder="产品型号" v-model="item.size" :disabled="true" style="width: 150px; margin-left: 10px;" class="filter-item" />
-              <el-input v-model="item.quantity" placeholder="填写入库数量" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
-              <el-input v-model="item.cost" placeholder="填写产品成本" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
-              <el-button style="margin-left: 40px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
-            </el-form-item>
-
-            <el-form-item>
-              <el-button style="width: 150px;" type="primary" plain @click="addMoreProduct">添加产品</el-button>
+            <el-form-item label="" prop="event" style="margin-bottom: 10px;">
+              <el-input placeholder="活动名称" v-model="temp.title" style="width: 200px;" class="filter-item" />
+              <el-date-picker
+                v-model="temp.start_date"
+                type="date"
+                style="width: 200px;"
+                placeholder="开始日期">
+              </el-date-picker>
+              <el-date-picker
+                v-model="temp.end_date"
+                type="date"
+                style="width: 200px;"
+                placeholder="结束如期">
+              </el-date-picker>
             </el-form-item>
           </div>
           <div>
-          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库备注 </h3>
+          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 活动备注 </h3>
           <el-input
             type="textarea"
             :autosize="{ minRows: 2, maxRows: 4}"
@@ -134,18 +95,17 @@
         <el-button @click="dialogFormVisible = false">
           取消
         </el-button>
-        <el-button type="primary" @click="addNewInventory()">
+        <el-button type="primary" @click="addNewEvent()">
           提交
         </el-button>
       </div>
-    </el-dialog> -->
+    </el-dialog>
   </div>
 </template>
 
 <script>
 import EventAPI from '@/api/event'
 
-import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
@@ -153,7 +113,6 @@ import { mapGetters } from 'vuex'
 export default {
   name: 'ComplexTable',
   components: { Pagination },
-  directives: { waves },
   filters: {},
   data() {
     return {
@@ -167,6 +126,12 @@ export default {
         page: 1,
         limit: 10
       },
+      temp: {
+        title: null,
+        start_date: null,
+        end_date: null,
+        note: null
+      }
     }
   },
   created() {
@@ -201,7 +166,92 @@ export default {
         })
     },
     handleCreate() {
-
+      this.dialogFormVisible = true
+    },
+    addNewEvent() {
+      this.$confirm('确定添加?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.sendNewEventRequest()
+      }).catch((err) => {   
+        console.log(err)     
+      });
+    },
+    sendNewEventRequest() {
+      if (!this.temp.title || !this.temp.start_date || !this.temp.end_date) {
+        this.$message({
+          message: '必须填写所有信息',
+          type: 'error'
+        })
+    } else {
+      this.listLoading = true
+      EventAPI.addEvent(this.temp)
+        .then(response => {
+          this.listLoading = false
+            this.$alert('添加成功', '成功', {
+              confirmButtonText: '确定',
+              callback: action => {
+                this.page = 1
+                this.getEvents()
+                this.getCount()
+                this.dialogFormVisible = false;
+                this.temp = {
+                  title:null,
+                  start_date: null,
+                  end_date: null,
+                  note: undefined
+                }
+              }
+            });
+        })
+        .catch(err => {
+          console.log(err)     
+          this.$message({
+            message: '添加失败，请联系徐神检查',
+            type: 'error'
+          })
+          this.listLoading = false
+        })
+      }
+    },
+    editEvent() {
+      
+    },
+    deleteEvent(item) {
+      this.$confirm('确定删除>>' + item.title + '<<吗？', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.sendDeleteEventRequest(item.id)
+      }).catch((err) => {   
+        console.log(err)     
+      });
+    },
+    sendDeleteEventRequest(id) {
+      this.listLoading = true
+      EventAPI.deleteEvent(id)
+        .then(response => {
+          this.listLoading = false
+            this.$alert('删除成功', '成功', {
+              confirmButtonText: '确定',
+              callback: action => {
+                this.page = 1
+                this.getEvents()
+                this.getCount()
+              }
+            });
+        })
+        .catch(err => {
+          console.log(err)     
+          this.$message({
+            message: '删除失败，请联系徐神检查',
+            type: 'error'
+          })
+          this.listLoading = false
+        })
     }
   }
 }
@@ -229,7 +279,7 @@ export default {
   }
   .input-title {
     display: inline-block;
-    width: 150px;
+    width: 200px;
     line-height: 25px;
     font-size: 14px;
     margin-left: 10px;

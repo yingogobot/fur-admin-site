@@ -419,65 +419,65 @@ export default {
           message: '出库类型必须填写',
           type: 'error'
         })
-      } else if (this.temp.products.length === 0) {
-        this.$message({
-          message: '至少要有一个或以上的产品入库',
-          type: 'error'
-        })
-      } else {
-        let data = {
-          inventory_type: this.temp.inventory_type,
-          account_id: this.id,
-          product_data: [],
-          note: this.temp.note
+    } else if (this.temp.products.length === 0) {
+      this.$message({
+        message: '至少要有一个或以上的产品入库',
+        type: 'error'
+      })
+    } else {
+      let data = {
+        inventory_type: this.temp.inventory_type,
+        account_id: this.id,
+        product_data: [],
+        note: this.temp.note
+      }
+
+      this.temp.products.forEach(p => {
+        let d = {
+          id: p.product_id,
+          quantity: p.quantity,
+          cost: p.cost
         }
+        data.product_data.push(d)
+      })
 
-        this.temp.products.forEach(p => {
-          let d = {
-            id: p.product_id,
-            quantity: p.quantity,
-            cost: p.cost
-          }
-          data.product_data.push(d)
-        })
-
-        console.log(data)
-        this.listLoading = true
-        addNewInventoryRequest(data)
-          .then(response => {
-            this.listLoading = false
-            this.$alert('库存添加成功', '成功', {
-              confirmButtonText: '确定',
-              callback: action => {
-                this.page = 1
-                this.getInventoryOut()
-                this.loadProductStorage()
-                this.dialogFormVisible = false;
-                this.temp = {
-                  inventory_type: undefined,
-                  products: [{
-                      product_type: '',
-                      product_sub_type: '',
-                      product_id: '',
-                      quantity: undefined,
-                      cost: undefined,
-                      size: '',
-                      key: 1
-                    }
-                  ],
-                  note: undefined
-                }
+      console.log(data)
+      this.listLoading = true
+      addNewInventoryRequest(data)
+        .then(response => {
+          this.listLoading = false
+          this.$alert('库存添加成功', '成功', {
+            confirmButtonText: '确定',
+            callback: action => {
+              this.page = 1
+              this.getInventoryOut()
+              this.loadProductStorage()
+              this.dialogFormVisible = false;
+              this.temp = {
+                inventory_type: undefined,
+                products: [{
+                    product_type: '',
+                    product_sub_type: '',
+                    product_id: '',
+                    quantity: undefined,
+                    cost: undefined,
+                    size: '',
+                    key: 1
+                  }
+                ],
+                note: undefined
               }
-            });
+            }
+          });
+        })
+        .catch(err => {
+          console.log(err)     
+          this.$message({
+            message: '添加库存失败，请联系徐神检查',
+            type: 'error'
           })
-          .catch(err => {
-            console.log(err)     
-            this.$message({
-              message: '添加库存失败，请联系徐神检查',
-              type: 'error'
-            })
-            this.listLoading = false
-          })
+          this.listLoading = false
+        })
       }
     }
   }

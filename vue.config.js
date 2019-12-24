@@ -27,7 +27,7 @@ module.exports = {
   publicPath: '/admin/',
   outputDir: 'dist',
   assetsDir: 'static',
-  lintOnSave: process.env.NODE_ENV === 'development',
+  lintOnSave: process.env.VUE_APP_NODE_ENV === 'development',
   productionSourceMap: false,
   devServer: (() => {
     if (process.env.VUE_APP_NODE_ENV === 'dev') {
@@ -98,12 +98,12 @@ module.exports = {
 
     config
       // https://webpack.js.org/configuration/devtool/#development
-      .when(process.env.NODE_ENV === 'development',
+      .when(process.env.VUE_APP_NODE_ENV === 'development',
         config => config.devtool('cheap-source-map')
       )
 
     config
-      .when(process.env.NODE_ENV !== 'development',
+      .when(process.env.VUE_APP_NODE_ENV !== 'development',
         config => {
           config
             .plugin('ScriptExtHtmlWebpackPlugin')

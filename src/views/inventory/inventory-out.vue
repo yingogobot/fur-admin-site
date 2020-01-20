@@ -19,7 +19,7 @@
         搜索
       </el-button>
       <el-button class="filter-item" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
-        添加新入库
+        添加新出库
       </el-button>
     </div>
 
@@ -79,11 +79,16 @@
           <span>￥{{ row.per_item_cost_atm }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="录入人" width="150px" align="center">
+      <el-table-column label="申请人" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.ordered_by }}</span>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column label="录入人" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.added_by_name }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getInventoryOut" />
@@ -144,15 +149,19 @@
               <el-button style="width: 150px;" type="primary" plain @click="addMoreProduct">添加产品</el-button>
             </el-form-item>
           </div>
+          <div style="margin-bottom: 10px;">
+            <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 申请人 </h3>
+            <el-input v-model="temp.ordered_by" placeholder="填写申请人姓名" class="filter-item" clearable style="width: 200px;" />
+          </div>
           <div>
-          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库备注 </h3>
-          <el-input
-            type="textarea"
-            :autosize="{ minRows: 2, maxRows: 4}"
-            placeholder="备注"
-            v-model="temp.note"
-            style="width: 70%" />
-            </div>
+            <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库备注 </h3>
+            <el-input
+              type="textarea"
+              :autosize="{ minRows: 2, maxRows: 4}"
+              placeholder="备注"
+              v-model="temp.note"
+              style="width: 70%" />
+          </div>
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -215,7 +224,8 @@ export default {
             key: 1
           }
         ],
-        note: undefined
+        note: undefined,
+        ordered_by: undefined
       },
       dialogFormVisible: false,
       rowSpans: null
@@ -429,7 +439,8 @@ export default {
         inventory_type: this.temp.inventory_type,
         account_id: this.id,
         product_data: [],
-        note: this.temp.note
+        note: this.temp.note,
+        ordered_by: this.temp.ordered_by
       }
 
       this.temp.products.forEach(p => {
@@ -443,7 +454,7 @@ export default {
 
       console.log(data)
       this.listLoading = true
-      addNewInventoryRequest(data)
+      InventoryAPI.addNewInventoryRequest(data)
         .then(response => {
           this.listLoading = false
           this.$alert('库存添加成功', '成功', {
@@ -465,7 +476,8 @@ export default {
                     key: 1
                   }
                 ],
-                note: undefined
+                note: undefined,
+                ordered_by: undefined
               }
             }
           });

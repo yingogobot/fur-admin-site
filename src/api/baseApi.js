@@ -23,7 +23,9 @@ export default {
     return new Promise((resolve, reject) => {
       let url = ApiHelper.handleApiUrl(endpoint)
       let header = { headers: ApiHelper.baseHeader() }
-      Vue.http.post(url, qs.stringify(data), header)
+      // console.log('==================JSON.stringify(data)==================')
+      // console.log(data)
+      Vue.http.post(url, data, header)
         .then((response) => resolve(response.body.results))
         .catch((err) => {
           console.log(endpoint + ' error' + JSON.stringify(err))

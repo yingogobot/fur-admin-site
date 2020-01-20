@@ -79,11 +79,16 @@
           <span>￥{{ row.per_item_cost_atm }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="录入人" width="150px" align="center">
+      <el-table-column label="申请人" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.ordered_by }}</span>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column label="录入人" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.added_by_name }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getInventoryIn" />
@@ -417,7 +422,8 @@ export default {
           inventory_type: this.temp.inventory_type,
           account_id: this.id,
           product_data: [],
-          note: this.temp.note
+          note: this.temp.note,
+          ordered_by: this.temp.ordered_by
         }
 
         this.temp.products.forEach(p => {
@@ -431,7 +437,7 @@ export default {
 
         console.log(data)
         this.listLoading = true
-        addNewInventoryRequest(data)
+        InventoryAPI.addNewInventoryRequest(data)
           .then(response => {
             this.listLoading = false
             this.$alert('库存添加成功', '成功', {

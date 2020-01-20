@@ -15,7 +15,8 @@ export default {
   },
   baseHeader() {
     return {
-      'content-type': 'application/x-www-form-urlencoded',
+      // 'Content-Type': 'application/x-www-form-urlencoded',
+      // 'Accept' : 'application/json',
       'x-fur-admin-access-token': getToken()
     }
   }

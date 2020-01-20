@@ -714,7 +714,8 @@ export default {
                       key: 1
                     }
                   ],
-                  note: undefined
+                  note: undefined,
+                  ordered_by: undefined
                 }
               }
             });

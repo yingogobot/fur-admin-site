@@ -34,7 +34,7 @@ var plugins = [
     }),
     new EnvironmentPlugin({
       NODE_ENV: 'production', // 除非有定义 process.env.NODE_ENV，否则就使用 'development'
-      BASE_URL: 'https://sanguo.q0studio.com:8223/fur/v1/',
+      BASE_URL: 'https://api.furfurland.com:8443/fur/v1/',
       DEBUG: false
     })
 ];

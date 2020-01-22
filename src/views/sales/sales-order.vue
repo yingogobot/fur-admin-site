@@ -2,17 +2,17 @@
   <div class="app-container">
     <div class="filter-container">
       <h2>筛选结果</h2>
-      <el-input v-model="listQuery.inventory_out_id" placeholder="出库批次" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.inventory_out_type" placeholder="出库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
-        <el-option v-for="item in inventoryOutTypes" :key="item.id" :label="item.title" :value="item.id" />
+      <el-input v-model="listQuery.sales_id" placeholder="出库批次" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-select v-model="listQuery.sales_type" placeholder="出库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+        <el-option v-for="item in salesTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-if="listQuery.inventory_type === 1" v-model="listQuery.sales_channel" placeholder="销售渠道" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-if="listQuery.sales_type === 1" v-model="listQuery.sales_channel_id" placeholder="销售渠道" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in salesChannel" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-if="listQuery.inventory_type === 2" v-model="listQuery.event_id" placeholder="活动类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-if="listQuery.sales_type === 2" v-model="listQuery.event_id" placeholder="活动类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in events" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-if="listQuery.inventory_type === 3" v-model="listQuery.resaler_id" placeholder="分销渠道" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-if="listQuery.sales_type === 3" v-model="listQuery.resaler_id" placeholder="分销渠道" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in resalers" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
       <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
@@ -28,15 +28,15 @@
         搜索
       </el-button>
       <el-button class="filter-item" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
-        添加新出库
+        添加新销售
       </el-button>
     </div>
 
-    <h2>出库详情</h2>
+    <h2>销售详情</h2>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
-      :data="inventories"
+      :data="sales"
       :span-method="objectSpanMethod"
       border
       fit
@@ -47,12 +47,12 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库类型" prop="inventory_type" width="100px" align="center">
+      <el-table-column label="出库类型" prop="sales_type" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.inventory_out_type }}</span>
+          <span>{{ row.sales_type }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库时间" prop="inventory_type" width="100px" align="center">
+      <el-table-column label="出库时间" prop="sales_type" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{moment(row.created_at).format('YYYY-MM-DD')}}</span>
         </template>
@@ -152,7 +152,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getInventoryOut" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getAllSales" />
 
     <el-dialog title="添加新出库" :visible.sync="dialogFormVisible" width="80%">
       <el-form ref="dataForm"
@@ -163,12 +163,12 @@
         <div>
           <h3 style="display: inline-block; width: 100px;"> 出库类型 </h3>
           <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.inventory_out_type" placeholder="选择入库类型">
-              <el-option v-for="item in inventoryOutTypes" :key="item.id" :label="item.title" :value="item.id" />
+            <el-select v-model="temp.sales_type" placeholder="选择入库类型">
+              <el-option v-for="item in salesTypes" :key="item.id" :label="item.title" :value="item.id" />
             </el-select>
           </el-form-item>
         </div>
-        <div v-if="temp.inventory_out_type === 1">
+        <div v-if="temp.sales_type === 1">
           <h3 style="display: inline-block; width: 100px;"> 直销渠道 </h3>
           <el-form-item prop="type" style="display: inline-block;">
             <el-select v-model="temp.sales_channel" placeholder="选择入库类型">
@@ -176,7 +176,7 @@
             </el-select>
           </el-form-item>
         </div>
-        <div v-if="temp.inventory_out_type === 2">
+        <div v-if="temp.sales_type === 2">
           <h3 style="display: inline-block; width: 100px;"> 活动名称 </h3>
           <el-form-item prop="type" style="display: inline-block;">
             <el-select v-model="temp.event" placeholder="选择入库类型">
@@ -184,7 +184,7 @@
             </el-select>
           </el-form-item>
         </div>
-        <div v-if="temp.inventory_out_type === 3">
+        <div v-if="temp.sales_type === 3">
           <h3 style="display: inline-block; width: 100px;"> 分销渠道 </h3>
           <el-form-item prop="type" style="display: inline-block;">
             <el-select v-model="temp.event" placeholder="选择入库类型">
@@ -301,7 +301,7 @@
         <el-button @click="dialogFormVisible = false">
           取消
         </el-button>
-        <el-button type="primary" @click="addNewInventoryOut()">
+        <el-button type="primary" @click="addSalesOrder()">
           提交
         </el-button>
       </div>
@@ -310,12 +310,11 @@
 </template>
 
 <script>
-// import { getAllEvents } from '@/api/event'
-// import { getAllSalesChannel } from '@/api/sales-channel'
-// import { getAllResalers } from '@/api/resaler'
-
-import InventoryAPI from '@/api/inventory.js'
+import SalesAPI from '@/api/sales.js'
 import ProductAPI from '@/api/product'
+import ResalerAPI from '@/api/resaler'
+import EventAPI from '@/api/event'
+import SalesChannelAPI from '@/api/sales-channel'
 
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
@@ -330,10 +329,10 @@ export default {
   data() {
     return {
       tableKey: 0,
-      inventories: null,
+      sales: null,
       total: 0,
       listLoading: true,
-      inventoryOutTypes:[],
+      salesTypes:[],
       productTypes: [],
       productSubTypes: [],
       selectedProducts: [],
@@ -342,9 +341,9 @@ export default {
       salesChannel: [],
       events: [],
       listQuery: {
-        inventory_out_id: undefined,
-        inventory_out_type: undefined,
-        sales_channel: undefined,
+        sales_id: undefined,
+        sales_type: undefined,
+        sales_channel_id: undefined,
         page: 1,
         limit: 10,
         product_type: undefined,
@@ -354,7 +353,7 @@ export default {
         event_id: undefined
       },
       temp: {
-        inventory_out_type: undefined,
+        sales_type: undefined,
         products: [{
             product_type: '',
             product_sub_type: '',
@@ -387,10 +386,10 @@ export default {
     }
   },
   created() {
-    this.getInventoryOut()
-    this.getInventoryOutCount()
+    this.getAllSales()
+    this.getSalesCount()
     this.getProductTypes()
-    this.getInventoryOutTypes()
+    this.getSalesTypes()
     this.getResalers()
     this.getSalesChannels()
     this.getEvents()
@@ -404,7 +403,7 @@ export default {
     calculateRowSpan() {
       let g = []
       let count = 0
-      this.inventories.forEach(i => {
+      this.sales.forEach(i => {
         let found = false
         g.forEach(t => {
           if (t.id === i.id) {
@@ -428,16 +427,16 @@ export default {
       });
       this.rowSpans = g;
     },
-    getInventoryOut() {
+    getAllSales() {
       this.listLoading = true
-      InventoryAPI.fetchAllInventoryOut({ filter_data: this.listQuery })
+      SalesAPI.getAllSales(this.listQuery)
         .then(response => {
-          this.inventories = response.data
+          this.sales = response.data
           this.listLoading = false
           this.calculateRowSpan()
 
           let g = []
-          this.inventories.forEach(i => {
+          this.sales.forEach(i => {
             i.total_price = ((i.per_item_price_atm * i.per_product_discount_ratio) - i.per_product_discount) * i.quantity
             i.total_profit = i.total_price - (i.per_item_cost_atm * i.quantity)
             let found = false
@@ -461,7 +460,7 @@ export default {
           })
 
           g.forEach(t => {
-            this.inventories.forEach(i => {
+            this.sales.forEach(i => {
               if (t.id === i.id) {
                 i.order_total_price = t.order_total_price - i.coupon - i.discount
                 i.order_total_profit = t.order_total_profit - i.shipping_cost - i.other_cost
@@ -470,28 +469,30 @@ export default {
           })
         })
         .catch(err => {
+          console.log(err)
           this.$message({
-            message: '读取库存失败，请联系徐神检查',
+            message: 'getAllSales 读取库存失败，请联系徐神检查',
             type: 'error'
           })
           this.listLoading = false
         })
     },
-    getInventoryOutTypes() {
-      InventoryAPI.getAllInventoryOutTypes()
+    getSalesTypes() {
+      SalesAPI.getAllSalesType()
         .then(response => {
           console.log(response)
-          this.inventoryOutTypes = response
+          this.salesTypes = response
         })
     },
-    getInventoryOutCount() {
-      InventoryAPI.getAllInventoryOutCount()
+    getSalesCount() {
+      SalesAPI.getAllSalesCount(this.listQuery)
         .then(response => {
+          console.log(response)
           this.total = response.total
         })
     },
     getProductTypes() {
-      getAllProductType()
+      ProductAPI.getAllProductType()
         .then(response => {
           this.productTypes = response
         })
@@ -550,19 +551,19 @@ export default {
       }
     },
     getResalers() {
-      getAllResalers()
+      ResalerAPI.getAllResalers()
         .then(response => {
           this.resalers = response
         })
     },
     getEvents() {
-      getAllEvents()
+      EventAPI.getAllEvents()
         .then(response => {
           this.events = response
         })
     },
     getSalesChannels() {
-      getAllSalesChannel()
+      SalesChannelAPI.getAllSalesChannels()
         .then(response => {
           this.salesChannel = response
         })
@@ -581,10 +582,8 @@ export default {
       this.calculateOrderPrice()
     },
     calculateOrderPrice() {
-      console.log('sdfsfsfs')
       let total = 0
       this.temp.products.forEach(p => {
-        console.log(p)
         total = total + p.total_price;
       })
       this.temp.order_total_price = total * this.temp.discount - this.temp.coupon;
@@ -612,7 +611,8 @@ export default {
     },
     handleFilter() {
       this.listQuery.page = 1
-      this.getInventoryOut()
+      this.getAllSales()
+      this.getSalesCount()
     },
     addMoreProduct() {
       this.temp.products.push({
@@ -638,18 +638,18 @@ export default {
         this.$refs['dataForm'].clearValidate()
       })
     },
-    addNewInventoryOut() {
+    addSalesOrder() {
       this.$confirm('确定添加?', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.sendAddInventoryOutRequest()
+        this.sendAddSalesRequest()
       }).catch(() => {        
       });
     },
-    sendAddInventoryOutRequest() {
-      if (!this.temp.inventory_out_type) {
+    sendAddSalesRequest() {
+      if (!this.temp.sales_type) {
         this.$message({
           message: '入库类型必须填写',
           type: 'error'
@@ -661,13 +661,13 @@ export default {
         })
       } else {
         let data = {
-          inventory_out_data: {
-            type: this.temp.inventory_out_type,
+          sales_order_data: {
+            type: this.temp.sales_type,
             coupon: this.temp.coupon,
             discount: this.temp.discount,
             shipping_cost: this.temp.shipping_cost,
             other_cost: this.temp.other_cost,
-            sales_channel: this.temp.sales_channel,
+            sales_channel_id: this.temp.sales_channel_id,
             resaler_id: this.temp.resaler_id,
             event_id: this.temp.event_id,
             fully_paid: this.temp.fully_paid ? 1 : 0,

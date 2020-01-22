@@ -6,7 +6,7 @@ const dataRouter = {
   path: '/data',
   component: Layout,
   redirect: '/data/sales-channel',
-  name: 'Inventory',
+  name: 'Data',
   meta: {
     title: '数据系统',
     icon: 'table'

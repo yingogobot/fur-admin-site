@@ -79,11 +79,11 @@
           <span>￥{{ row.per_item_cost_atm }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="申请人" width="150px" align="center">
+      <!-- <el-table-column label="申请人" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.ordered_by }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <!-- <el-table-column label="录入人" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.added_by_name }}</span>

@@ -1,7 +1,6 @@
 import VueResource from 'vue-resource'
 import Vue from 'vue'
 import ApiHelper from './apiHelpers.js'
-import qs from 'qs'
 
 Vue.use(VueResource)
 
@@ -23,8 +22,6 @@ export default {
     return new Promise((resolve, reject) => {
       let url = ApiHelper.handleApiUrl(endpoint)
       let header = { headers: ApiHelper.baseHeader() }
-      // console.log('==================JSON.stringify(data)==================')
-      // console.log(data)
       Vue.http.post(url, data, header)
         .then((response) => resolve(response.body.results))
         .catch((err) => {

@@ -7,6 +7,7 @@ Vue.use(Router)
 import Layout from '@/layout'
 import inventoryRouter from './modules/inventory'
 import dataRouter from './modules/data'
+import salesRouter from './modules/sales'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -70,6 +71,7 @@ export const constantRoutes = [
   },
   inventoryRouter,
   dataRouter,
+  salesRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]
 

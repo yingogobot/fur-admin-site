@@ -27,7 +27,7 @@ const inventoryRouter = {
     {
       path: 'inventory-out',
       component: () => import('@/views/inventory/inventory-out'),
-      name: 'InventoryIn',
+      name: 'InventoryOut',
       meta: { title: '出库明细' }
     }
   ]

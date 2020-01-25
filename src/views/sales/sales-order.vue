@@ -47,17 +47,17 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库类型" prop="sales_type" width="100px" align="center">
+      <el-table-column label="销售类型" prop="sales_type" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.sales_type }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库时间" prop="sales_type" width="100px" align="center">
+      <el-table-column label="销售时间" prop="sales_type" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{moment(row.created_at).format('YYYY-MM-DD')}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库渠道" width="100px" align="center">
+      <el-table-column label="销售渠道" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.sales_channel || row.resaler_name || row.event_title }}</span>
         </template>
@@ -82,7 +82,7 @@
           <span>{{ row.size }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库数量" width="100px" align="center">
+      <el-table-column label="数量" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.quantity }}</span>
         </template>
@@ -92,7 +92,7 @@
           <span>￥{{ row.per_item_cost_atm }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="出库价格" width="100px" align="center">
+      <el-table-column label="销售价格" width="100px" align="center">
         <template slot-scope="{row}">
           <span>￥{{ row.per_item_price_atm }}</span>
         </template>
@@ -154,16 +154,16 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getAllSales" />
 
-    <el-dialog title="添加新出库" :visible.sync="dialogFormVisible" width="80%">
+    <el-dialog title="添加新销售" :visible.sync="dialogFormVisible" width="80%">
       <el-form ref="dataForm"
         :model="temp" 
         label-position="left" 
         label-width="10px" 
         style="margin-left:20px;">
         <div>
-          <h3 style="display: inline-block; width: 100px;"> 出库类型 </h3>
+          <h3 style="display: inline-block; width: 100px;"> 销售类型 </h3>
           <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.sales_type" placeholder="选择入库类型">
+            <el-select v-model="temp.sales_type" placeholder="选择销售类型">
               <el-option v-for="item in salesTypes" :key="item.id" :label="item.title" :value="item.id" />
             </el-select>
           </el-form-item>
@@ -200,7 +200,7 @@
               <div class="input-title input-title-extra-long">产品分类</div>
               <div class="input-title input-title-extra-long">产品名称</div>
               <div class="input-title input-title-short">零售价</div>
-              <div class="input-title input-title-short">出库数量</div>
+              <div class="input-title input-title-short">数量</div>
               <div class="input-title input-title-short">产品优惠</div>
               <div class="input-title input-title-short">产品折扣</div>
               <div class="input-title input-title-extra-long">总价</div>
@@ -234,7 +234,7 @@
             <el-form-item>
               <el-button style="width: 150px;" type="primary" plain @click="addMoreProduct">添加产品</el-button>
               <div> 产品折扣为0-1，例如：9折，则填写0.9</div>
-              <div> 总价 =（零售价*产品折扣 - 产品优惠）*出库数量</div>
+              <div> 总价 =（零售价 * 产品折扣 - 产品优惠）* 数量</div>
             </el-form-item>
           </div>
           <div style=" margin-bottom: 20px; ">

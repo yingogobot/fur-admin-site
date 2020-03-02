@@ -104,13 +104,18 @@ export default {
     }
   },
   created() {
-    this.getAllStorage()
-    this.getProductTypes()
   },
   computed: {
     ...mapGetters([
       'id'
     ])
+  },
+  beforeRouteEnter (to, from, next) {
+    next(vm => { 
+      vm.getAllStorage()
+      vm.getProductTypes()
+      next();
+    }) 
   },
   methods: {
     getAllStorage() {
@@ -160,9 +165,9 @@ export default {
       this.selectedProducts = []
       if (subType) {
         ProductAPI.getProductBySubType({product_sub_type: subType})
-            .then(response => {
-              this.selectedProducts = response
-            })
+          .then(response => {
+            this.selectedProducts = response
+          })
       }
     },
     handleFilter() {

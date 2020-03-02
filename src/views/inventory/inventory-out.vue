@@ -243,6 +243,16 @@ export default {
       'id'
     ])
   },
+  beforeRouteEnter (to, from, next) {
+    next(vm => { 
+      vm.getInventoryOut()
+      vm.getInventoryOutCount()
+      vm.getProductTypes()
+      vm.getInventoryOutTypes()
+      vm.loadProductStorage()
+      next();
+    }) 
+  },
   methods: {
     calculateRowSpan() {
       let g = []

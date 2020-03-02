@@ -13,6 +13,12 @@ const dataRouter = {
   },
   children: [
     {
+      path: 'product-type',
+      component: () => import('@/views/data/product-type'),
+      name: 'Product Type',
+      meta: { title: '产品类型' }
+    },
+    {
       path: 'sales-channel',
       component: () => import('@/views/data/sales-channel'),
       name: 'Sales Channel',

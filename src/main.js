@@ -19,12 +19,17 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
+import Verte from 'verte';
+import 'verte/dist/verte.css';
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
 
 import moment from 'moment'
 Vue.prototype.moment = moment
+
+// register component globally
+Vue.component('verte', Verte);
 
 // register global utility filters
 Object.keys(filters).forEach(key => {

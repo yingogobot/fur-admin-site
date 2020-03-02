@@ -24,6 +24,12 @@
       <el-select v-model="listQuery.product" placeholder="产品" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in selectedProducts" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
+      <el-select v-model="listQuery.paymentTypes" placeholder="付款状态" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+        <el-option v-for="item in paymentTypes" :key="item.id" :label="item.title" :value="item.id" />
+      </el-select>
+      <el-select v-model="listQuery.paymentTypes" placeholder="特殊状态" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+        <el-option v-for="item in specialTypes" :key="item.id" :label="item.title" :value="item.id" />
+      </el-select>
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
         搜索
       </el-button>
@@ -87,11 +93,6 @@
           <span>{{ row.quantity }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="产品成本" width="100px" align="center">
-        <template slot-scope="{row}">
-          <span>￥{{ row.per_item_cost_atm }}</span>
-        </template>
-      </el-table-column>
       <el-table-column label="销售价格" width="100px" align="center">
         <template slot-scope="{row}">
           <span>￥{{ row.per_item_price_atm }}</span>
@@ -102,7 +103,7 @@
           <span>￥{{ row.per_product_discount }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="单品折扣" width="100px" align="center">
+      <el-table-column label="单品折扣率" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.per_product_discount_ratio * 100 }}%</span>
         </template>
@@ -127,9 +128,14 @@
           <span>￥{{ row.coupon }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="订单折扣" width="100px" align="center">
+      <el-table-column label="订单折扣率" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>￥{{ row.discount }}</span>
+          <span>{{ row.discount * 100 }}%</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="订单总价" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>￥{{ row.order_total_price }}</span>
         </template>
       </el-table-column>
       <el-table-column label="全额付款" width="100px" align="center">
@@ -147,8 +153,8 @@
           <span>{{ row.added_by_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="查看订单详情" width="150px" align="center">
-        <el-button type="primary" plain @click="addMoreProduct">详情</el-button>
+      <el-table-column label="编辑订单" width="150px" align="center">
+        <el-button type="warning" plain @click="addMoreProduct">编辑</el-button>
       </el-table-column>
     </el-table>
 
@@ -248,12 +254,19 @@
               <el-input v-model="temp.discount" placeholder="订单折扣" class="filter-item" clearable @change="calculateOrderPrice()" />
             </div>
             <div style="margin-left: 10px; display: inline-block; width: 150px;">
+              <h3 class="middle-title"> 人工改价 </h3>
+              <el-input v-model="temp.manual_discount" placeholder="人工改价" class="filter-item" clearable @change="calculateOrderPrice()" />
+            </div>
+          </div>
+          <div style=" margin-bottom: 20px; ">
+            <h3 class="section-title"> 其他成本 </h3>
+            <div style="display: inline-block; width: 150px;">
               <h3 class="middle-title"> 运费 </h3>
               <el-input v-model="temp.shipping_cost" placeholder="运费" class="filter-item" clearable @change="calculateOrderPrice()" />
             </div>
             <div style="margin-left: 10px; display: inline-block; width: 150px;">
-              <h3 class="middle-title"> 其他费用 </h3>
-              <el-input v-model="temp.other_cost" placeholder="其他费用" class="filter-item" clearable @change="calculateOrderPrice()" />
+              <h3 class="middle-title"> 额外成本 </h3>
+              <el-input v-model="temp.other_cost" placeholder="额外成本" class="filter-item" clearable @change="calculateOrderPrice()" />
             </div>
           </div>
           <div style=" margin-bottom: 20px; ">
@@ -317,7 +330,7 @@ import EventAPI from '@/api/event'
 import SalesChannelAPI from '@/api/sales-channel'
 
 import waves from '@/directive/waves' // waves directive
-import { parseTime } from '@/utils'
+import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 
@@ -340,6 +353,14 @@ export default {
       resalers: [],
       salesChannel: [],
       events: [],
+      paymentTypes: [
+        {id: 0, title: '否'},
+        {id: 1, title: '是'}
+      ],
+      specialTypes: [
+        {id: 0, title: '否'},
+        {id: 1, title: '是'}
+      ],
       listQuery: {
         sales_id: undefined,
         sales_type: undefined,
@@ -350,7 +371,8 @@ export default {
         product_sub_type: undefined,
         product: undefined,
         resaler_id: undefined,
-        event_id: undefined
+        event_id: undefined,
+        paymentTypes: undefined,
       },
       temp: {
         sales_type: undefined,
@@ -372,7 +394,8 @@ export default {
         order_total_profit: 0,
         coupon: 0,
         discount: 1,
-        shipping_cost: 0,
+        manual_discount: 0,
+        shipping_cost: 5,
         other_cost: 0,
         sales_channel: undefined,
         resaler_id: undefined,
@@ -386,18 +409,23 @@ export default {
     }
   },
   created() {
-    this.getAllSales()
-    this.getSalesCount()
-    this.getProductTypes()
-    this.getSalesTypes()
-    this.getResalers()
-    this.getSalesChannels()
-    this.getEvents()
   },
   computed: {
     ...mapGetters([
       'id'
     ])
+  },
+  beforeRouteEnter (to, from, next) {
+    next(vm => { 
+      vm.getAllSales()
+      vm.getSalesCount()
+      vm.getProductTypes()
+      vm.getSalesTypes()
+      vm.getResalers()
+      vm.getSalesChannels()
+      vm.getEvents()
+      next();
+    }) 
   },
   methods: {
     calculateRowSpan() {
@@ -428,6 +456,7 @@ export default {
       this.rowSpans = g;
     },
     getAllSales() {
+      console.log('haliluya')
       this.listLoading = true
       SalesAPI.getAllSales(this.listQuery)
         .then(response => {
@@ -437,8 +466,8 @@ export default {
 
           let g = []
           this.sales.forEach(i => {
-            i.total_price = ((i.per_item_price_atm * i.per_product_discount_ratio) - i.per_product_discount) * i.quantity
-            i.total_profit = i.total_price - (i.per_item_cost_atm * i.quantity)
+            i.total_price = roundToTwo(((i.per_item_price_atm * i.per_product_discount_ratio) - i.per_product_discount) * i.quantity)
+            i.total_profit = roundToTwo(i.total_price - (i.per_item_cost_atm * i.quantity))
             let found = false
             g.forEach(t => {
               if (t.id === i.id) {
@@ -462,8 +491,9 @@ export default {
           g.forEach(t => {
             this.sales.forEach(i => {
               if (t.id === i.id) {
-                i.order_total_price = t.order_total_price - i.coupon - i.discount
+                i.order_total_price = (t.order_total_price - i.coupon) * i.discount - i.manual_discount
                 i.order_total_profit = t.order_total_profit - i.shipping_cost - i.other_cost
+                console.log(i)
               }              
             })
           })
@@ -578,7 +608,7 @@ export default {
       })
     },
     calculateTotalPrice(item) {
-      item.total_price = Math.round(((item.price * item.discount_rate) - item.discount) * item.quantity * 100) / 100
+      item.total_price = roundToTwo(((item.price * item.discount_rate) - item.discount) * item.quantity)
       this.calculateOrderPrice()
     },
     calculateOrderPrice() {
@@ -586,8 +616,8 @@ export default {
       this.temp.products.forEach(p => {
         total = total + p.total_price;
       })
-      this.temp.order_total_price = total * this.temp.discount - this.temp.coupon;
-      this.temp.order_total_profit = total * this.temp.discount - this.temp.coupon - this.temp.shipping_cost - this.temp.other_cost;
+      this.temp.order_total_price = roundToTwo(total * this.temp.discount - this.temp.coupon - this.temp.manual_discount);
+      this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - this.temp.shipping_cost - this.temp.other_cost);
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex < 4 || (columnIndex >= 14 && columnIndex < 22)) {
@@ -623,7 +653,7 @@ export default {
         cost: undefined,
         price: undefined,
         discount: 0,
-        discount_rate: 1,
+        discount_rate: 1.0,
         note: undefined,
         key: this.temp.products.length + 1,
         total_price: 0
@@ -661,13 +691,14 @@ export default {
         })
       } else {
         let data = {
-          sales_order_data: {
+          sales_data: {
             type: this.temp.sales_type,
             coupon: this.temp.coupon,
             discount: this.temp.discount,
+            manual_discount: this.temp.manual_discount,
             shipping_cost: this.temp.shipping_cost,
             other_cost: this.temp.other_cost,
-            sales_channel_id: this.temp.sales_channel_id,
+            sales_channel: this.temp.sales_channel,
             resaler_id: this.temp.resaler_id,
             event_id: this.temp.event_id,
             fully_paid: this.temp.fully_paid ? 1 : 0,
@@ -678,44 +709,58 @@ export default {
           product_data: [],
         }
 
-        console.log(data)
-
         this.temp.products.forEach(p => {
           let d = {
             product_id: p.product_id,
             quantity: p.quantity,
-            cost: p.cost,
-            price: p.price,
-            discount: p.discount,
-            discount_ratio: p.discount_rate
+            per_item_cost_atm: p.cost,
+            per_item_price_atm: p.price,
+            per_product_discount: p.discount,
+            per_product_discount_ratio: p.discount_rate
           }
           data.product_data.push(d)
         })
 
+        console.log(data)
         this.listLoading = true
-        addNewInventoryRequest(data)
+        SalesAPI.addNewSalesRequest(data)
           .then(response => {
             this.listLoading = false
             this.$alert('库存添加成功', '成功', {
               confirmButtonText: '确定',
               callback: action => {
                 this.page = 1
-                this.getInventoryOut()
+                this.getAllSales()
                 this.dialogFormVisible = false;
                 this.temp = {
-                  inventory_in_type: undefined,
+                  sales_type: undefined,
                   products: [{
                       product_type: '',
                       product_sub_type: '',
                       product_id: '',
-                      quantity: undefined,
+                      quantity: 0,
                       cost: undefined,
-                      size: '',
-                      key: 1
+                      price: undefined,
+                      discount: 0,
+                      discount_rate: 1,
+                      note: undefined,
+                      key: 1,
+                      total_price: 0
                     }
                   ],
+                  order_total_price: 0,
+                  order_total_profit: 0,
+                  coupon: 0,
+                  discount: 1,
+                  manual_discount: 0,
+                  shipping_cost: 5,
+                  other_cost: 0,
+                  sales_channel: undefined,
+                  resaler_id: undefined,
+                  event_id: undefined,
                   note: undefined,
-                  ordered_by: undefined
+                  fully_paid: true,
+                  special_type: false
                 }
               }
             });

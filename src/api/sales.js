@@ -21,5 +21,12 @@ export default {
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
-  }
+  },
+  addNewSalesRequest(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/add', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
 }

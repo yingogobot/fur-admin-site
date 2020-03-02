@@ -9,7 +9,7 @@
       <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
         <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.product_sub_type" placeholder="产品分类" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSelectedProducts(listQuery.product_sub_type)">
+      <el-select v-model="listQuery.product_sub_type" placeholder="产品细类" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSelectedProducts(listQuery.product_sub_type)">
         <el-option v-for="item in productSubTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
       <el-select v-model="listQuery.product" placeholder="产品" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
@@ -223,15 +223,20 @@ export default {
     }
   },
   created() {
-    this.getInventoryIn()
-    this.getInventoryInCount()
-    this.getProductTypes()
-    this.getInventoryInTypes()
   },
   computed: {
     ...mapGetters([
       'id'
     ])
+  },
+  beforeRouteEnter (to, from, next) {
+    next(vm => { 
+      vm.getInventoryIn()
+      vm.getInventoryInCount()
+      vm.getProductTypes()
+      vm.getInventoryInTypes()
+      next();
+    }) 
   },
   methods: {
     calculateRowSpan() {

@@ -1,9 +1,23 @@
 import $ from './baseApi.js'
 
 export default {
-  getAllProducts() {
+  addProduct(data) {
     return new Promise((resolve, reject) => {
-      $.post('product/get_all_products')
+      $.post('product/add', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getAllProducts(data) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_all_products', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getAllProductCount(data) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_all_products_count', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
@@ -29,6 +43,13 @@ export default {
         .catch((err) => reject(err))
     })
   },
+  getAllProductSubType(data) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_all_product_sub_type', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
   getAllProductSubTypeCount() {
     return new Promise((resolve, reject) => {
       $.post('product/get_product_sub_type_count')
@@ -46,6 +67,13 @@ export default {
   addProductType(data) {
     return new Promise((resolve, reject) => {
       $.post('product/add_product_type', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  addProductSubType(data) {
+    return new Promise((resolve, reject) => {
+      $.post('product/add_product_sub_type', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

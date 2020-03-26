@@ -60,14 +60,42 @@
       </el-table-column>
       <el-table-column label="销售时间" prop="sales_type" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{moment(row.created_at).format('YYYY-MM-DD')}}</span>
+          <span>{{moment(row.date).format('YYYY-MM-DD')}}</span>
         </template>
       </el-table-column>
-      <el-table-column label="销售渠道" width="100px" align="center">
+      <el-table-column label="销售渠道" prop="sales_type" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.sales_channel || row.resaler_name || row.event_title }}</span>
+          <div v-if="row.sales_type_id === 1">
+            <span>直销</span>
+          </div>
+          <div v-if="row.sales_type_id === 2">
+            <span>活动销售</span>
+          </div>
+          <div v-if="row.sales_type_id === 3">
+            <span>分销取货</span>
+          </div>
+          <div v-if="row.sales_type_id === 4">
+            <span>其他销售</span>
+          </div>
         </template>
       </el-table-column>
+      <el-table-column label="客户信息" prop="sales_type" width="180px" align="center">
+        <template slot-scope="{row}">
+          <div v-if="row.sales_type_id === 1">
+            <span>{{ row.member_name + ' | ' + row.member_cellphone }}</span>
+          </div>
+          <div v-if="row.sales_type_id === 2">
+            <span>{{ row.event_title }}</span>
+          </div>
+          <div v-if="row.sales_type_id === 3">
+            <span>{{ row.resaler_name }}</span>
+          </div>
+          <div v-if="row.sales_type_id === 4">
+            <span>其他销售</span>
+          </div>
+        </template>
+      </el-table-column>
+     
       <el-table-column label="产品类型" width="100px" align="center">
         <template slot-scope="{row}">
           <el-tag class="tag" :color="row.tag_color">{{ row.product_type }}</el-tag>
@@ -153,8 +181,15 @@
           <span>{{ row.added_by_name }}</span>
         </template>
       </el-table-column>
+       <el-table-column label="备注" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.note }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="编辑订单" width="150px" align="center">
-        <el-button type="warning" plain @click="addMoreProduct">编辑</el-button>
+        <template slot-scope="scope">
+          <el-button type="warning" plain @click="editSale(scope.row)">编辑</el-button>
+        </template>
       </el-table-column>
     </el-table>
 
@@ -177,29 +212,67 @@
         <div v-if="temp.sales_type === 1">
           <h3 style="display: inline-block; width: 100px;"> 直销渠道 </h3>
           <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.sales_channel" placeholder="选择入库类型">
-              <el-option v-for="item in salesChannel" :key="item.id" :label="item.title" :value="item.id" />
+            <el-select v-model="temp.sales_channel" value-key="id" placeholder="选择入库类型" >
+              <el-option v-for="item in salesChannel" :key="item.id" :label="item.title" :value="item" />
             </el-select>
           </el-form-item>
+          <h3 style="padding-left: 30px; display: inline-block; width: 100px;"> 购买客户 </h3>
+          <el-form-item prop="type" style="display: inline-block;">
+            <el-select v-model="temp.member" value-key="cellphone" filterable remote placeholder="请输入手机号码"
+              :remote-method="searchMember" :loading="isSearchingMember">
+              <el-option v-for="item in members" :key="item.id" :label="item.searchValue" :value="item" />
+            </el-select>
+          </el-form-item>
+          <span style="display: inline-block; margin-left: 20px;" v-if="this.formType === 2 && temp.member"> {{ temp.member.name + ' | ' + temp.member.cellphone }}</span>
         </div>
         <div v-if="temp.sales_type === 2">
           <h3 style="display: inline-block; width: 100px;"> 活动名称 </h3>
           <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.event" placeholder="选择入库类型">
-              <el-option v-for="item in events" :key="item.id" :label="item.title" :value="item.id" />
+            <el-select v-model="temp.event" value-key="id" placeholder="选择入库类型">
+              <el-option v-for="item in events" :key="item.id" :label="item.title" :value="item" />
             </el-select>
           </el-form-item>
         </div>
         <div v-if="temp.sales_type === 3">
           <h3 style="display: inline-block; width: 100px;"> 分销渠道 </h3>
           <el-form-item prop="type" style="display: inline-block;">
-            <el-select v-model="temp.event" placeholder="选择入库类型">
-              <el-option v-for="item in resalers" :key="item.id" :label="item.name" :value="item.id" />
+            <el-select v-model="temp.resaler" value-key="id" placeholder="选择入库类型">
+              <el-option v-for="item in resalers" :key="item.id" :label="item.name" :value="item" />
             </el-select>
           </el-form-item>
         </div>
+        <div v-if="this.formType === 2 && temp.selectedProducts.length > 0" style="margin-top:30px; margin-bottom: 30px;">
+          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 已添加产品 </h3>
+          <div style="display: inline-block; margin-bottom: 5px;">
+            <div>
+              <div class="input-title input-title-extra-long">产品类型</div>
+              <div class="input-title input-title-extra-long">产品分类</div>
+              <div class="input-title input-title-extra-long">产品名称</div>
+              <div class="input-title input-title-short">零售价</div>
+              <div class="input-title input-title-short">数量</div>
+              <div class="input-title input-title-short">产品优惠</div>
+              <div class="input-title input-title-short">产品折扣</div>
+              <div class="input-title input-title-extra-long">总价</div>
+            </div>
+            <div v-for="(p, index) in temp.selectedProducts" :key="p.id" prop="product" style="margin-top:20px; margin-bottom: 5px;">
+              <div class="input-title input-title-extra-long">{{p.product_type.title}}</div>
+              <div class="input-title input-title-extra-long">{{p.product_sub_type.title}}</div>
+              <div class="input-title input-title-extra-long">{{p.title}}</div>
+              <div class="input-title input-title-short">{{p.price}}</div>
+              <div class="input-title input-title-short">{{p.quantity}}</div>
+              <div class="input-title input-title-short">{{p.discount}}</div>
+              <div class="input-title input-title-short">{{p.discount_rate}}</div>
+              <div class="input-title input-title-extra-long">{{p.total_price}}</div>
+              <el-button type="danger" @click="deleteSelectedProduct(index)">
+                删除
+              </el-button>
+              <hr />
+            </div>
+          </div>
+        </div>
         <div>
-          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 出库产品 </h3>
+          <h3  v-if="this.formType === 1" style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 出库产品 </h3>
+          <h3  v-if="this.formType === 2" style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加出库产品 </h3>
           <div style="display: inline-block;">
             <div style=" margin-bottom: 5px;">
               <div class="input-title input-title-extra-long">产品类型</div>
@@ -211,29 +284,31 @@
               <div class="input-title input-title-short">产品折扣</div>
               <div class="input-title input-title-extra-long">总价</div>
             </div>
-            <el-form-item v-for="(item, index) in temp.products" 
-              label="" :key="item.id" prop="product" style="margin-bottom: 10px;">
-              <el-select v-model="item.product_type" placeholder="产品类型" 
+            <el-form-item v-for="(p, index) in temp.products" 
+              label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
+              <el-select v-model="p.product_type" value-key="id" placeholder="产品类型" 
                 clearable style="width: 150px;" class="filter-item" 
-                @change="getSubType(item.product_type, item)"
-                @clear="getSubType(item.product_type, item)">
-                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item.id" />
+                @change="getSubType(p)"
+                @clear="getSubType(p)">
+                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-select v-model="item.product_sub_type" class="filter-item inventory-in-input-extra" placeholder="产品分类" 
-                clearable @change="getProductBySubType(item.product_sub_type, item)" 
-                @clear="getProductBySubType(item.product_sub_type, item)">
-                <el-option v-for="item in productSubTypes" :key="item.id" :label="item.title" :value="item.id" />
+              <el-select v-if="temp.products[0].product_type" v-model="p.product_sub_type" value-key="id" class="filter-item inventory-in-input-extra" 
+                placeholder="产品分类" clearable 
+                @change="getProductBySubType(p.product_sub_type, p)" 
+                @clear="getProductBySubType(p.product_sub_type, p)">
+                <el-option  v-for="item in temp.products[0].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-select v-model="item.product_id" class="filter-item inventory-in-input-extra" placeholder="产品名称" 
-                clearable @change="readProductInfo(item)"
-                @clear="readProductInfo(item)">
-                <el-option v-for="item in products" :key="item.id" :label="item.title" :value="item.id" />
+              <el-select v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
+                placeholder="产品名称" clearable 
+                @change="readProductInfo(p)"
+                @clear="readProductInfo(p)">
+                <el-option v-for="item in products" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-input placeholder="零售价" v-model="item.price" :disabled="true" class="filter-item inventory-in-input-short" />
-              <el-input v-model="item.quantity" placeholder="数量" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(item)" />
-              <el-input v-model="item.discount" placeholder="产品优惠" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(item)"  />
-              <el-input v-model="item.discount_rate" placeholder="折扣率" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(item)"  />
-              <el-input v-model="item.total_price" placeholder="总价" class="filter-item inventory-in-input-extra" clearable :disabled="true"/>
+              <el-input placeholder="零售价" v-model="p.price" :disabled="true" class="filter-item inventory-in-input-short" />
+              <el-input v-model="p.quantity" placeholder="数量" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)" />
+              <el-input v-model="p.discount" placeholder="产品优惠" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)"  />
+              <el-input v-model="p.discount_rate" placeholder="折扣率" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)"  />
+              <el-input v-model="p.total_price" placeholder="总价" class="filter-item inventory-in-input-extra" clearable :disabled="true"/>
               <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
             </el-form-item>
 
@@ -288,6 +363,16 @@
               <el-checkbox v-model="temp.special_type">特殊状态</el-checkbox>
             </div>
           </div>
+          <div style=" margin-bottom: 20px; ">
+            <h3 class="section-title"> 订单日期 </h3>
+            <el-date-picker
+              v-model="temp.date"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              :picker-options="pickerOptions">
+            </el-date-picker>
+          </div>
           <div>
             <h3 class="section-title"> 出库备注 </h3>
             <el-input
@@ -297,25 +382,17 @@
               v-model="temp.note"
               style="width: 70%" />
           </div>
-          <!-- <div>
-            <h3 class="section-title-large"> 上传合同或凭证 </h3>
-            <el-upload
-              class="upload-demo"
-              drag
-              action="https://jsonplaceholder.typicode.com/posts/"
-              multiple>
-              <i class="el-icon-upload"></i>
-              <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-            </el-upload>
-          </div> -->
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
           取消
         </el-button>
-        <el-button type="primary" @click="addSalesOrder()">
-          提交
+        <el-button v-if="this.formType === 1" type="primary" @click="addSalesOrder()">
+          提交新的销售订单
+        </el-button>
+        <el-button v-if="this.formType === 2" type="primary" @click="updateSalesOrder()">
+          修改当前销售订单
         </el-button>
       </div>
     </el-dialog>
@@ -328,11 +405,13 @@ import ProductAPI from '@/api/product'
 import ResalerAPI from '@/api/resaler'
 import EventAPI from '@/api/event'
 import SalesChannelAPI from '@/api/sales-channel'
+import MemberAPI from '@/api/member'
 
 import waves from '@/directive/waves' // waves directive
 import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
+import moment from 'moment'
 
 export default {
   name: 'ComplexTable',
@@ -345,6 +424,7 @@ export default {
       sales: null,
       total: 0,
       listLoading: true,
+      editingProduct: null,
       salesTypes:[],
       productTypes: [],
       productSubTypes: [],
@@ -375,10 +455,11 @@ export default {
         paymentTypes: undefined,
       },
       temp: {
+        id: undefined, //this should only exist when editing
         sales_type: undefined,
         products: [{
-            product_type: '',
-            product_sub_type: '',
+            product_type: undefined,
+            product_sub_type: undefined,
             product_id: '',
             quantity: 0,
             cost: undefined,
@@ -390,6 +471,8 @@ export default {
             total_price: 0
           }
         ],
+        selectedProducts:[],
+        deletedProducts:[],
         order_total_price: 0,
         order_total_profit: 0,
         coupon: 0,
@@ -397,18 +480,50 @@ export default {
         manual_discount: 0,
         shipping_cost: 5,
         other_cost: 0,
+        member: undefined,
         sales_channel: undefined,
-        resaler_id: undefined,
-        event_id: undefined,
+        resaler: undefined,
+        event: undefined,
         note: undefined,
         fully_paid: true,
-        special_type: false
+        special_type: false,
+        date: undefined
       },
+      memberCellphone: '',
+      isSearchingMember: false,
+      members:[],
       dialogFormVisible: false,
-      rowSpans: null
+      formType: 0,
+      rowSpans: null,
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+        shortcuts: [{
+          text: '今天',
+          onClick(picker) {
+            picker.$emit('pick', new Date());
+          }
+        }, {
+          text: '昨天',
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24);
+            picker.$emit('pick', date);
+          }
+        }, {
+          text: '一周前',
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit('pick', date);
+          }
+        }]
+      },
     }
   },
   created() {
+    this.temp.date = new Date()
   },
   computed: {
     ...mapGetters([
@@ -456,47 +571,12 @@ export default {
       this.rowSpans = g;
     },
     getAllSales() {
-      console.log('haliluya')
       this.listLoading = true
       SalesAPI.getAllSales(this.listQuery)
         .then(response => {
           this.sales = response.data
           this.listLoading = false
           this.calculateRowSpan()
-
-          let g = []
-          this.sales.forEach(i => {
-            i.total_price = roundToTwo(((i.per_item_price_atm * i.per_product_discount_ratio) - i.per_product_discount) * i.quantity)
-            i.total_profit = roundToTwo(i.total_price - (i.per_item_cost_atm * i.quantity))
-            let found = false
-            g.forEach(t => {
-              if (t.id === i.id) {
-                found = true
-                t.order_total_price = t.order_total_price + i.total_price
-                t.order_total_profit = t.order_total_profit + i.total_profit
-              }
-            })
-
-            if (!found) {
-              let t = {
-                id: i.id,
-                order_total_price: i.total_price,
-                order_total_profit: i.total_profit
-              }
-
-              g.push(t)
-            }
-          })
-
-          g.forEach(t => {
-            this.sales.forEach(i => {
-              if (t.id === i.id) {
-                i.order_total_price = (t.order_total_price - i.coupon) * i.discount - i.manual_discount
-                i.order_total_profit = t.order_total_profit - i.shipping_cost - i.other_cost
-                console.log(i)
-              }              
-            })
-          })
         })
         .catch(err => {
           console.log(err)
@@ -510,14 +590,12 @@ export default {
     getSalesTypes() {
       SalesAPI.getAllSalesType()
         .then(response => {
-          console.log(response)
           this.salesTypes = response
         })
     },
     getSalesCount() {
       SalesAPI.getAllSalesCount(this.listQuery)
         .then(response => {
-          console.log(response)
           this.total = response.total
         })
     },
@@ -527,18 +605,11 @@ export default {
           this.productTypes = response
         })
     },
-    getSubType(productType, item) {
+    getSubType(item) {
       this.selectedProducts =[]
       this.listQuery.product = undefined
-      this.productSubTypes = []
       this.listQuery.product_sub_type = undefined
-
-      if (productType) {
-        ProductAPI.getProductSubType({product_type_id: productType})
-          .then(response => {
-            this.productSubTypes = response
-          })
-      }
+      this.productSubTypes = item.product_type.sub_type
 
       if (item) {
         item.product_sub_type = undefined
@@ -563,13 +634,7 @@ export default {
       }
     },
     getProductBySubType(subType, item) {
-      if (subType) {
-        ProductAPI.getProductBySubType({product_sub_type: subType})
-          .then(response => {
-            this.products = response
-          })
-      }
-
+      this.products = subType.products
       if (item) {
         item.product_id = undefined
         item.cost = undefined
@@ -600,7 +665,8 @@ export default {
     },
     readProductInfo(item) {
       this.products.forEach(p => {
-        if (p.id === item.product_id) {
+        if (p.id === item.product.id) {
+          item.product_id = p.id;
           item.size = p.size;
           item.cost = p.cost;
           item.price = p.price;
@@ -608,19 +674,31 @@ export default {
       })
     },
     calculateTotalPrice(item) {
-      item.total_price = roundToTwo(((item.price * item.discount_rate) - item.discount) * item.quantity)
+      item.total_price = roundToTwo((item.price - item.discount) * item.discount_rate * item.quantity)
+      item.total_cost = roundToTwo(item.cost * item.quantity)
+      item.total_profit = roundToTwo(item.total_price - item.total_cost)
       this.calculateOrderPrice()
     },
     calculateOrderPrice() {
       let total = 0
-      this.temp.products.forEach(p => {
-        total = total + p.total_price;
-      })
+      let total_product_cost = 0
+      if (this.temp.products && this.temp.products.length > 0) {
+        this.temp.products.forEach(p => {
+          total = total + p.total_price;
+          total_product_cost = total_product_cost + p.total_cost
+        })
+      }
+      if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
+        this.temp.selectedProducts.forEach(p => {
+          total = total + p.total_price;
+          total_product_cost = total_product_cost + p.total_cost
+        })
+      }
       this.temp.order_total_price = roundToTwo(total * this.temp.discount - this.temp.coupon - this.temp.manual_discount);
-      this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - this.temp.shipping_cost - this.temp.other_cost);
+      this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - total_product_cost - this.temp.shipping_cost - this.temp.other_cost);
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex < 4 || (columnIndex >= 14 && columnIndex < 22)) {
+      if (columnIndex < 5 || (columnIndex >= 14 && columnIndex <= 23)) {
         let data = {
           rowspan: 0,
           colspan: 0
@@ -637,7 +715,6 @@ export default {
 
         return data;
       }
-        
     },
     handleFilter() {
       this.listQuery.page = 1
@@ -646,8 +723,8 @@ export default {
     },
     addMoreProduct() {
       this.temp.products.push({
-        product_type: '',
-        product_sub_type: '',
+        product_type: undefined,
+        product_sub_type: undefined,
         product_id: '',
         quantity: undefined,
         cost: undefined,
@@ -664,9 +741,111 @@ export default {
     },
     handleCreate() {
       this.dialogFormVisible = true
+      this.formType = 1
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
+    },
+    editSale(item) {
+      console.log(item)
+      let data = {
+        id: item.id,
+        sales_type: item.sales_type_id,
+        order_total_price: item.order_total_price,
+        order_total_profit: item.order_total_profit,
+        coupon: item.coupon,
+        discount: item.discount,
+        manual_discount: item.manual_discount,
+        shipping_cost: item.shipping_cost,
+        other_cost: item.other_cost,
+        member_id: item.member_id,
+        sales_channel: {
+          id: item.sales_channel_id,
+          title: item.sales_channel_title
+        },
+        resaler: {
+          id: item.resaler_id,
+          name: item.resaler_name
+        },
+        event: {
+          id: item.event_id,
+          title: item.event_title
+        },
+        note: item.note,
+        fully_paid: item.fully_paid === 1 ? true : false,
+        special_type: item.special_type  === 1 ? true : false,
+        date: item.date,
+        member: {
+          name: item.member_name,
+          cellphone: item.member_cellphone,
+          searchValue: item.member_cellphone + ' | ' + item.member_name
+        },
+        products: [],
+        selectedProducts: [],
+        deletedProducts:[]
+      }
+      this.sales.forEach(i => {
+        if (i.id === item.id) {
+          data.selectedProducts.push({
+            sales_product_id: i.sales_product_id,
+            title: i.product_title,
+            product_type: {
+              id: i.product_type_id,
+              title: i.product_type
+            },
+            product_sub_type: {
+              id: i.product_sub_type_id,
+              title: i.product_sub_type
+            },
+            product_id: i.product_id,
+            quantity: i.quantity,
+            cost: i.per_item_cost_atm,
+            price: i.per_item_price_atm,
+            discount: i.per_product_discount,
+            discount_rate: i.per_product_discount_ratio,
+            note: i.note,
+            key: i.product_id,
+            total_price: i.total_price,
+            total_cost: i.total_cost,
+            total_profit: i.total_profit,
+          })
+        }
+      })
+      this.temp = data
+      this.dialogFormVisible = true
+      this.formType = 2
+    },
+    deleteSelectedProduct(itemIndex) {
+      this.temp.deletedProducts.push(this.temp.selectedProducts[itemIndex])
+      this.$delete(this.temp.selectedProducts, itemIndex)
+      this.calculateOrderPrice()
+    },
+    searchMember(query) {
+      this.isSearchingMember = true
+      if (query.length > 3) {
+        MemberAPI.searchMember({cellphone: query})
+          .then(response => {
+            this.isSearchingMember = false
+            this.members = response
+            this.members.forEach(m => {
+              m.searchValue = m.cellphone + ' | ' + m.name
+            })
+            console.log(this.members)
+          })
+          .catch(err => {
+            this.$message({
+              message: '搜索失败，请联系徐神检查',
+              type: 'error'
+            })
+            this.isSearchingMember = false
+          })
+      }
+    },
+    selectMember(item) {
+      console.log(this.temp)
+      this.temp.member_name = item.name
+      this.temp.member_cellphone = item.cellphone
+      console.log(this.temp)
     },
     addSalesOrder() {
       this.$confirm('确定添加?', '提示', {
@@ -679,6 +858,7 @@ export default {
       });
     },
     sendAddSalesRequest() {
+      let that = this
       if (!this.temp.sales_type) {
         this.$message({
           message: '入库类型必须填写',
@@ -698,17 +878,20 @@ export default {
             manual_discount: this.temp.manual_discount,
             shipping_cost: this.temp.shipping_cost,
             other_cost: this.temp.other_cost,
+            order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
+            order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
             sales_channel: this.temp.sales_channel,
+            member_id: this.temp.member_id,
             resaler_id: this.temp.resaler_id,
             event_id: this.temp.event_id,
             fully_paid: this.temp.fully_paid ? 1 : 0,
             special_type: this.temp.special_type ? 1 : 0,
             added_by: this.id,
+            date: moment(this.temp.date).format('YYYY-MM-DD'),
             note: this.temp.note
           },
           product_data: [],
         }
-
         this.temp.products.forEach(p => {
           let d = {
             product_id: p.product_id,
@@ -716,62 +899,150 @@ export default {
             per_item_cost_atm: p.cost,
             per_item_price_atm: p.price,
             per_product_discount: p.discount,
-            per_product_discount_ratio: p.discount_rate
+            per_product_discount_ratio: p.discount_rate,
+            total_price: p.total_price,
+            total_cost: p.total_cost,
+            total_profit: p.total_profit,
           }
           data.product_data.push(d)
         })
 
-        console.log(data)
         this.listLoading = true
         SalesAPI.addNewSalesRequest(data)
           .then(response => {
-            this.listLoading = false
+            that.listLoading = false
             this.$alert('库存添加成功', '成功', {
               confirmButtonText: '确定',
               callback: action => {
                 this.page = 1
                 this.getAllSales()
-                this.dialogFormVisible = false;
-                this.temp = {
-                  sales_type: undefined,
-                  products: [{
-                      product_type: '',
-                      product_sub_type: '',
-                      product_id: '',
-                      quantity: 0,
-                      cost: undefined,
-                      price: undefined,
-                      discount: 0,
-                      discount_rate: 1,
-                      note: undefined,
-                      key: 1,
-                      total_price: 0
-                    }
-                  ],
-                  order_total_price: 0,
-                  order_total_profit: 0,
-                  coupon: 0,
-                  discount: 1,
-                  manual_discount: 0,
-                  shipping_cost: 5,
-                  other_cost: 0,
-                  sales_channel: undefined,
-                  resaler_id: undefined,
-                  event_id: undefined,
-                  note: undefined,
-                  fully_paid: true,
-                  special_type: false
-                }
+                this.dialogFormVisible = false
+                this.setDataBackToDefault()
               }
             });
           })
           .catch(err => {
-            this.$message({
+            that.$message({
               message: '添加库存失败，请联系徐神检查',
               type: 'error'
             })
-            this.listLoading = false
+            that.listLoading = false
           })
+      }
+    },
+    updateSalesOrder() {
+      this.$confirm('确定所有的修改?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.sendUpdateSalesRequest()
+      }).catch(() => {        
+      });
+    },
+    sendUpdateSalesRequest() {
+      let that = this
+      let data = {
+        sales_data: {
+          id: this.temp.id,
+          type: this.temp.sales_type,
+          coupon: this.temp.coupon,
+          discount: this.temp.discount,
+          manual_discount: this.temp.manual_discount,
+          shipping_cost: this.temp.shipping_cost,
+          other_cost: this.temp.other_cost,
+          order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
+          order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
+          sales_channel_id: this.temp.sales_channel.id,
+          member_id: this.temp.member.id,
+          resaler_id: this.temp.resaler.id,
+          event_id: this.temp.event.id,
+          fully_paid: this.temp.fully_paid ? 1 : 0,
+          special_type: this.temp.special_type ? 1 : 0,
+          added_by: this.id,
+          date: moment(this.temp.date).format('YYYY-MM-DD'),
+          note: this.temp.note
+        },
+        add_products: [],
+        delete_products: []
+      }
+      that.temp.products.forEach(p => {
+        if (p.product_id) {
+          let d = {
+            product_id: p.product_id,
+            quantity: p.quantity,
+            per_item_cost_atm: p.cost,
+            per_item_price_atm: p.price,
+            per_product_discount: p.discount,
+            per_product_discount_ratio: p.discount_rate,
+            total_price: p.total_price,
+            total_cost: p.total_cost,
+            total_profit: p.total_profit,
+          }
+          data.add_products.push(d)
+        }
+      })
+
+      that.temp.deletedProducts.forEach(p => {
+        data.delete_products.push(p.sales_product_id)
+      })
+      console.log(data)
+      that.listLoading = true
+      SalesAPI.updateSales(data)
+        .then(response => {
+          that.listLoading = false
+          that.$alert('销售订单修改成功', '成功', {
+            confirmButtonText: '确定',
+            callback: action => {
+              that.page = 1
+              that.getAllSales()
+              that.dialogFormVisible = false
+              this.setDataBackToDefault()
+            }
+          });
+        })
+        .catch(err => {
+          that.$message({
+            message: '销售订单修改失败，请联系徐神检查',
+            type: 'error'
+          })
+          that.listLoading = false
+        })
+    },
+    setDataBackToDefault() {
+      that.temp = {
+        id: undefined,
+        sales_type: undefined,
+        products: [{
+            product_type: '',
+            product_sub_type: '',
+            product_id: '',
+            quantity: 0,
+            cost: undefined,
+            price: undefined,
+            discount: 0,
+            discount_rate: 1,
+            note: undefined,
+            key: 1,
+            total_price: 0
+          }
+        ],
+        selectedProducts:[],
+        deletedProducts: [],
+        order_total_price: 0,
+        order_total_profit: 0,
+        coupon: 0,
+        discount: 1,
+        manual_discount: 0,
+        shipping_cost: 5,
+        other_cost: 0,
+        sales_channel: undefined,
+        resaler_id: undefined,
+        event_id: undefined,
+        note: undefined,
+        fully_paid: true,
+        special_type: false,
+        date: new Date()
       }
     }
   }

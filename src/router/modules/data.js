@@ -19,6 +19,18 @@ const dataRouter = {
       meta: { title: '产品类型' }
     },
     {
+      path: 'product-sub-type',
+      component: () => import('@/views/data/product-sub-type'),
+      name: 'Product Type',
+      meta: { title: '产品细分' }
+    },
+    {
+      path: 'product',
+      component: () => import('@/views/data/product'),
+      name: 'Product Type',
+      meta: { title: '产品' }
+    },
+    {
       path: 'sales-channel',
       component: () => import('@/views/data/sales-channel'),
       name: 'Sales Channel',

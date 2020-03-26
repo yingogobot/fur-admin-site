@@ -29,4 +29,11 @@ export default {
         .catch((err) => reject(err))
     })
   },
+  updateSales(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/update_sales', data)
+        .then((results) => resolve())
+        .catch((err) => reject(err))
+    })
+  }
 }

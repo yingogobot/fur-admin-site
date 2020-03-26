@@ -15,7 +15,7 @@
       highlight-current-row
       style="width: 100%;"
     >
-      <el-table-column label="渠道ID" prop="id" width="100px" align="center">
+      <el-table-column label="类型ID" prop="id" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
@@ -46,7 +46,7 @@
               <div class="input-title">产品类型名称</div>
             </div>
             <el-form-item label="" prop="salesChannel" style="margin-bottom: 10px;">
-              <el-input placeholder="渠道名称" v-model="temp.title" style="width: 200px;" class="filter-item" />
+              <el-input placeholder="产品类型名称" v-model="temp.title" style="width: 200px;" class="filter-item" />
             </el-form-item>
           </div>
           <div style="display: inline-block;">

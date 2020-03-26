@@ -2,8 +2,8 @@
   <div class="app-container">
     <div class="filter-container">
       <h2>筛选结果</h2>
-      <el-input v-model="listQuery.inventory_id" placeholder="入库批次" style="width: 150px;" class="filter-item"/>
-      <el-select v-model="listQuery.inventory_type" placeholder="入库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-input v-model="listQuery.inventory_id" placeholder="出库批次" style="width: 150px;" class="filter-item"/>
+      <el-select v-model="listQuery.inventory_type" placeholder="出库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in inventoryTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
       <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
@@ -84,11 +84,11 @@
           <span>{{ row.ordered_by }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="录入人" width="150px" align="center">
+      <el-table-column label="备注" width="150px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.added_by_name }}</span>
+          <span>{{ row.note }}</span>
         </template>
-      </el-table-column> -->
+      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getInventoryOut" />
@@ -108,14 +108,14 @@
           </el-form-item>
         </div>
         <div>
-          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库产品 </h3>
+          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 出库产品 </h3>
           <div style="display: inline-block;">
             <div style=" margin-bottom: 5px;">
               <div class="input-title">产品类型</div>
               <div class="input-title">产品分类</div>
               <div class="input-title">产品名称</div>
               <div class="input-title">产品规格</div>
-              <div class="input-title">入库数量</div>
+              <div class="input-title">出库数量</div>
               <div class="input-title">产品成本</div>
               <div class="input-title">当前库存</div>
             </div>
@@ -139,7 +139,7 @@
                 <el-option v-for="item in products" :key="item.id" :label="item.title" :value="item.id" />
               </el-select>
               <el-input placeholder="产品型号" v-model="item.size" :disabled="true" style="width: 150px; margin-left: 10px;" class="filter-item" />
-              <el-input v-model="item.quantity" placeholder="填写入库数量" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
+              <el-input v-model="item.quantity" placeholder="填出库数量" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
               <el-input v-model="item.cost" placeholder="填写产品成本" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
               <el-input v-model="item.storage" class="filter-item" :disabled="true" style="width: 150px; margin-left: 10px;" />
               <el-button style="margin-left: 40px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
@@ -154,7 +154,7 @@
             <el-input v-model="temp.ordered_by" placeholder="填写申请人姓名" class="filter-item" clearable style="width: 200px;" />
           </div>
           <div>
-            <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库备注 </h3>
+            <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 出库备注 </h3>
             <el-input
               type="textarea"
               :autosize="{ minRows: 2, maxRows: 4}"
@@ -441,7 +441,7 @@ export default {
         })
     } else if (this.temp.products.length === 0) {
       this.$message({
-        message: '至少要有一个或以上的产品入库',
+        message: '至少要有一个或以上的产品出库',
         type: 'error'
       })
     } else {

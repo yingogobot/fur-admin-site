@@ -8,6 +8,7 @@ import Layout from '@/layout'
 import inventoryRouter from './modules/inventory'
 import dataRouter from './modules/data'
 import salesRouter from './modules/sales'
+import memberRouter from './modules/member'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -70,8 +71,10 @@ export const constantRoutes = [
     ]
   },
   inventoryRouter,
-  dataRouter,
   salesRouter,
+  memberRouter,
+  dataRouter,
+  
   { path: '*', redirect: '/404', hidden: true }
 ]
 

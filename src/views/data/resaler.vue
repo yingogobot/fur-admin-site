@@ -35,6 +35,11 @@
           <span>{{ row.manager }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="地址" prop="inventory_type" width="200px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.address }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="备注" prop="inventory_type" align="center">
         <template slot-scope="{row}">
           <span>{{ row.note }}</span>
@@ -62,10 +67,12 @@
             <div style=" margin-bottom: 5px;">
               <div class="input-title">渠道名称</div>
               <div class="input-title">负责人名字</div>
+              <div class="input-title">地址</div>
             </div>
             <el-form-item label="" prop="resaler" style="margin-bottom: 10px;">
               <el-input placeholder="渠道名称" v-model="temp.name" style="width: 200px;" class="filter-item" />
               <el-input placeholder="负责人名字" v-model="temp.manager" style="width: 200px;" class="filter-item" />
+              <el-input placeholder="负责人名字" v-model="temp.address" style="width: 200px;" class="filter-item" />
             </el-form-item>
           </div>
           <div>
@@ -118,6 +125,7 @@ export default {
         name: null,
         manager: null,
         note: null,
+        address: null,
       }
     }
   },
@@ -187,7 +195,8 @@ export default {
                 this.temp = {
                   name:null,
                   manager: null,
-                  note: null
+                  note: null,
+                  address: null
                 }
               }
             });

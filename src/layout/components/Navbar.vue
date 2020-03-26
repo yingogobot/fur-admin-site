@@ -4,7 +4,13 @@
 
     <div class="right-menu">
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
-        <div class="title">{{name}} 今天也请加油为毛星球赚钱</div>
+        <div class="title">
+          <span style="display:inline-block; font-size: 35px; line-height: 25px; "> {{name}} </span>
+          <div style="display:inline-block;">
+            <span style="display:block; font-size: 15px; line-height: 25px; text-align: right;">今天也请加油为毛星球赚钱</span>
+            <span style="display:block; font-size: 15px; line-height: 25px; text-align: right;">当前版本：{{this.version()}}</span>
+          </div>
+        </div>
         <el-dropdown-menu slot="dropdown">
           <router-link to="/">
             <el-dropdown-item>回到主页</el-dropdown-item>
@@ -34,6 +40,9 @@ export default {
     ])
   },
   methods: {
+    version() {
+      return '1.1.0 build 1'
+    },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
     },

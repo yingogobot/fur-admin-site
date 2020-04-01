@@ -9,6 +9,7 @@ import inventoryRouter from './modules/inventory'
 import dataRouter from './modules/data'
 import salesRouter from './modules/sales'
 import memberRouter from './modules/member'
+import memberSalesDetail from '@/views/member/member-sales-detail'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -58,6 +59,18 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    component: Layout,
+    path: '/member-sales-detail/:id',
+    children: [
+      {
+        path: '/member-sales-detail/:id',
+        component: memberSalesDetail,
+        name: 'member-sales-detail',
+        meta: { title: '毛星球管理员主页', icon: 'international', affix: true }
+      }
+    ]
+  },
+  {
     path: '/',
     component: Layout,
     redirect: '/dashboard',
@@ -74,7 +87,6 @@ export const constantRoutes = [
   salesRouter,
   memberRouter,
   dataRouter,
-  
   { path: '*', redirect: '/404', hidden: true }
 ]
 

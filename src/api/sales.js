@@ -35,5 +35,12 @@ export default {
         .then((results) => resolve())
         .catch((err) => reject(err))
     })
+  },
+  getSalesDetailForMember(memberId) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/get_sales_detail', {member_id: memberId})
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
   }
 }

@@ -23,7 +23,7 @@
       </el-button> -->
     </div>
 
-    <h2>入库详情</h2>
+    <h2>库存详情</h2>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -122,6 +122,7 @@ export default {
       this.listLoading = true
       InventoryAPI.getStorage()
         .then(response => {
+          console.log(response)
           this.inventories = response
           this.listLoading = false
           this.calculateRowSpan()

@@ -1,9 +1,9 @@
 import $ from './baseApi.js'
 
 export default {
-  getAllResalers() {
+  getAllResalers(data) {
     return new Promise((resolve, reject) => {
-      $.post('resaler/get_all')
+      $.post('resaler/get_all', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

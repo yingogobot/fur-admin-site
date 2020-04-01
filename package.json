@@ -17,6 +17,7 @@
     "new": "plop",
     "analyze": "cross-env NODE_ENV=production npm_config_report=true npm run build:prod",
     "wstart": "webpack-dev-server --hot --inline --config webpack/webpack-dev.js --api_env botme",
+    "wstaging": "webpack-dev-server --hot --inline --config webpack/webpack-staging.js --api_env botme",
     "wbuild": "webpack --config webpack/webpack-prod.js"
   },
   "husky": {

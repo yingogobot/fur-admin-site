@@ -28,5 +28,19 @@ export default {
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
+  },
+  getMemberById(memberId) {
+    return new Promise((resolve, reject) => {
+      $.post('member/get_by_id', {member_id: memberId})
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  updateMember(data) {
+    return new Promise((resolve, reject) => {
+      $.post('member/update', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
   }
 }

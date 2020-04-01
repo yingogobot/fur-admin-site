@@ -74,7 +74,7 @@
           <div v-if="row.sales_type_id === 3">
             <span>分销取货</span>
           </div>
-          <div v-if="row.sales_type_id === 4">
+          <div v-if="row.sales_type_id === 5">
             <span>其他销售</span>
           </div>
         </template>
@@ -292,11 +292,11 @@
                 @clear="getSubType(p)">
                 <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-select v-if="temp.products[0].product_type" v-model="p.product_sub_type" value-key="id" class="filter-item inventory-in-input-extra" 
+              <el-select v-if="temp.products[index].product_type" v-model="p.product_sub_type" value-key="id" class="filter-item inventory-in-input-extra" 
                 placeholder="产品分类" clearable 
                 @change="getProductBySubType(p.product_sub_type, p)" 
                 @clear="getProductBySubType(p.product_sub_type, p)">
-                <el-option  v-for="item in temp.products[0].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
+                <el-option  v-for="item in temp.products[index].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
               </el-select>
               <el-select v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
                 placeholder="产品名称" clearable 
@@ -682,18 +682,18 @@ export default {
     calculateOrderPrice() {
       let total = 0
       let total_product_cost = 0
-      if (this.temp.products && this.temp.products.length > 0) {
+      // if (this.temp.products && this.temp.products.length > 0) {
         this.temp.products.forEach(p => {
           total = total + p.total_price;
           total_product_cost = total_product_cost + p.total_cost
         })
-      }
-      if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
+      // }
+      // if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
         this.temp.selectedProducts.forEach(p => {
           total = total + p.total_price;
           total_product_cost = total_product_cost + p.total_cost
         })
-      }
+      // }
       this.temp.order_total_price = roundToTwo(total * this.temp.discount - this.temp.coupon - this.temp.manual_discount);
       this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - total_product_cost - this.temp.shipping_cost - this.temp.other_cost);
     },
@@ -738,6 +738,7 @@ export default {
     },
     removeProduct(itemIndex) {
       this.$delete(this.temp.products, itemIndex)
+      this.calculateOrderPrice()
     },
     handleCreate() {
       this.dialogFormVisible = true
@@ -814,6 +815,7 @@ export default {
       this.temp = data
       this.dialogFormVisible = true
       this.formType = 2
+      this.calculateOrderPrice()
     },
     deleteSelectedProduct(itemIndex) {
       this.temp.deletedProducts.push(this.temp.selectedProducts[itemIndex])
@@ -830,7 +832,6 @@ export default {
             this.members.forEach(m => {
               m.searchValue = m.cellphone + ' | ' + m.name
             })
-            console.log(this.members)
           })
           .catch(err => {
             this.$message({
@@ -842,10 +843,8 @@ export default {
       }
     },
     selectMember(item) {
-      console.log(this.temp)
       this.temp.member_name = item.name
       this.temp.member_cellphone = item.cellphone
-      console.log(this.temp)
     },
     addSalesOrder() {
       this.$confirm('确定添加?', '提示', {
@@ -880,10 +879,10 @@ export default {
             other_cost: this.temp.other_cost,
             order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
             order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
-            sales_channel: this.temp.sales_channel,
-            member_id: this.temp.member_id,
-            resaler_id: this.temp.resaler_id,
-            event_id: this.temp.event_id,
+            sales_channel_id: this.temp.sales_channel ? this.temp.sales_channel.id : null,
+            member_id: this.temp.member ? this.temp.member.id : null,
+            resaler_id: this.temp.resaler ? this.temp.resaler.id : null,
+            event_id: this.temp.event ? this.temp.event.id : null,
             fully_paid: this.temp.fully_paid ? 1 : 0,
             special_type: this.temp.special_type ? 1 : 0,
             added_by: this.id,

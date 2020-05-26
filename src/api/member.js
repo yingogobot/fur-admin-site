@@ -8,9 +8,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  getMembersCount() {
+  getMembersCount(data) {
     return new Promise((resolve, reject) => {
-      $.post('member/get_count')
+      $.post('member/get_count', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
@@ -22,9 +22,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  searchMember(data) {
+  searchMemberByCellphone(data) {
     return new Promise((resolve, reject) => {
-      $.post('member/search', data)
+      $.post('member/search_by_cellphone', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

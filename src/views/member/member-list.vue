@@ -5,11 +5,9 @@
       <el-input v-model="listQuery.id" placeholder="会员id" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-input v-model="listQuery.cellphone" placeholder="手机号" style="width: 150px; margin-left: 15px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-input v-model="listQuery.city" placeholder="所在城市" style="width: 150px; margin-left: 15px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="姓名" style="width: 150px; margin-left: 15px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-select v-model="listQuery.pet_type" placeholder="宠物类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in petTypes" :key="item.id" :label="item.title" :value="item.id" />
-      </el-select>
-      <el-select v-model="listQuery.pet_gender" placeholder="宠物性别" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
-        <el-option v-for="item in petGenders" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
       <el-input v-model="listQuery.pet_sub_type" placeholder="宠物品种" style="width: 150px; margin-left: 15px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
@@ -331,7 +329,7 @@ export default {
         })
     },
     getCount() {
-      MemberAPI.getMembersCount()
+      MemberAPI.getMembersCount(this.listQuery)
         .then(response => {
           this.total = response.total
         })
@@ -382,7 +380,9 @@ export default {
           gender: p.gender,
           birthday: moment(p.birthday).format('YYYY-MM-DD')
         }
-        data.pets.push(d)
+        if (d.name && d.name != '') {
+          data.pets.push(d)
+        }
       })
 
       MemberAPI.addMember(data)
@@ -435,7 +435,7 @@ export default {
         pets: [],
       } 
       this.members.forEach(m => {
-        if(m.id === item.id) {
+        if(m.id === item.id && m.pet_id && m.pet_id != null) {
           this.temp.currentPets.push({
             id: m.pet_id,
             name: m.pet_name,
@@ -531,8 +531,8 @@ export default {
     },
     handleFilter() {
       this.listQuery.page = 1
-      this.getAllSales()
-      this.getSalesCount()
+      this.getMembers()
+      this.getCount()
     },
     checkMemberDetail(item) {
       console.log(item)

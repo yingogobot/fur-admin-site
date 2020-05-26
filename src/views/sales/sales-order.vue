@@ -24,12 +24,13 @@
       <el-select v-model="listQuery.product" placeholder="产品" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in selectedProducts" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.paymentTypes" placeholder="付款状态" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-model="listQuery.fully_paid" placeholder="付款状态" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @clear="clearFullyPaid()" >
         <el-option v-for="item in paymentTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.paymentTypes" placeholder="特殊状态" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-model="listQuery.special_type" placeholder="特殊状态" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @clear="clearSpecialType()">
         <el-option v-for="item in specialTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
+      <el-input v-model="listQuery.note" placeholder="备注" style="width: 150px; margin-left: 15px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
         搜索
       </el-button>
@@ -253,6 +254,7 @@
               <div class="input-title input-title-short">产品优惠</div>
               <div class="input-title input-title-short">产品折扣</div>
               <div class="input-title input-title-extra-long">总价</div>
+              <div class="input-title input-title-extra-long">备注</div>
             </div>
             <div v-for="(p, index) in temp.selectedProducts" :key="p.id" prop="product" style="margin-top:20px; margin-bottom: 5px;">
               <div class="input-title input-title-extra-long">{{p.product_type.title}}</div>
@@ -263,6 +265,7 @@
               <div class="input-title input-title-short">{{p.discount}}</div>
               <div class="input-title input-title-short">{{p.discount_rate}}</div>
               <div class="input-title input-title-extra-long">{{p.total_price}}</div>
+              <div class="input-title input-title-extra-long">{{p.product_note}}</div>
               <el-button type="danger" @click="deleteSelectedProduct(index)">
                 删除
               </el-button>
@@ -283,6 +286,7 @@
               <div class="input-title input-title-short">产品优惠</div>
               <div class="input-title input-title-short">产品折扣</div>
               <div class="input-title input-title-extra-long">总价</div>
+              <div class="input-title input-title-extra-long">备注</div>
             </div>
             <el-form-item v-for="(p, index) in temp.products" 
               label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
@@ -298,7 +302,7 @@
                 @clear="getProductBySubType(p.product_sub_type, p)">
                 <el-option  v-for="item in temp.products[index].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-select v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
+              <el-select v-if="temp.products[index].product_sub_type" v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
                 placeholder="产品名称" clearable 
                 @change="readProductInfo(p)"
                 @clear="readProductInfo(p)">
@@ -309,6 +313,7 @@
               <el-input v-model="p.discount" placeholder="产品优惠" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)"  />
               <el-input v-model="p.discount_rate" placeholder="折扣率" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)"  />
               <el-input v-model="p.total_price" placeholder="总价" class="filter-item inventory-in-input-extra" clearable :disabled="true"/>
+              <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
               <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
             </el-form-item>
 
@@ -452,7 +457,9 @@ export default {
         product: undefined,
         resaler_id: undefined,
         event_id: undefined,
-        paymentTypes: undefined,
+        fully_paid: undefined,
+        special_type: undefined,
+        note: undefined,
       },
       temp: {
         id: undefined, //this should only exist when editing
@@ -468,7 +475,8 @@ export default {
             discount_rate: 1,
             note: undefined,
             key: 1,
-            total_price: 0
+            total_price: 0,
+            note: undefined,
           }
         ],
         selectedProducts:[],
@@ -568,6 +576,7 @@ export default {
           g.push(newT)
         }
       });
+      console.log(g)
       this.rowSpans = g;
     },
     getAllSales() {
@@ -576,6 +585,7 @@ export default {
         .then(response => {
           this.sales = response.data
           this.listLoading = false
+          console.log(this.sales)
           this.calculateRowSpan()
         })
         .catch(err => {
@@ -674,7 +684,7 @@ export default {
       })
     },
     calculateTotalPrice(item) {
-      item.total_price = roundToTwo((item.price - item.discount) * item.discount_rate * item.quantity)
+      item.total_price = roundToTwo((item.price - parseFloat(item.discount)) * parseFloat(item.discount_rate) * item.quantity)
       item.total_cost = roundToTwo(item.cost * item.quantity)
       item.total_profit = roundToTwo(item.total_price - item.total_cost)
       this.calculateOrderPrice()
@@ -691,11 +701,13 @@ export default {
       // if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
         this.temp.selectedProducts.forEach(p => {
           total = total + p.total_price;
+          console.log(total)
           total_product_cost = total_product_cost + p.total_cost
         })
       // }
-      this.temp.order_total_price = roundToTwo(total * this.temp.discount - this.temp.coupon - this.temp.manual_discount);
-      this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - total_product_cost - this.temp.shipping_cost - this.temp.other_cost);
+      this.temp.order_total_price = roundToTwo( parseFloat(total) * parseFloat(this.temp.discount) + parseInt(this.temp.shipping_cost) - parseFloat(this.temp.coupon) - parseFloat(this.temp.manual_discount));
+      this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - total_product_cost - parseInt(this.temp.shipping_cost) - this.temp.other_cost);
+
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex < 5 || (columnIndex >= 14 && columnIndex <= 23)) {
@@ -746,6 +758,12 @@ export default {
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
+    },
+    clearFullyPaid() {
+      this.listQuery.fully_paid = undefined
+    },
+    clearSpecialType() {
+      this.listQuery.special_type = undefined
     },
     editSale(item) {
       console.log(item)
@@ -804,7 +822,7 @@ export default {
             price: i.per_item_price_atm,
             discount: i.per_product_discount,
             discount_rate: i.per_product_discount_ratio,
-            note: i.note,
+            product_note: i.product_note,
             key: i.product_id,
             total_price: i.total_price,
             total_cost: i.total_cost,
@@ -825,7 +843,7 @@ export default {
     searchMember(query) {
       this.isSearchingMember = true
       if (query.length > 3) {
-        MemberAPI.searchMember({cellphone: query})
+        MemberAPI.searchMemberByCellphone({cellphone: query})
           .then(response => {
             this.isSearchingMember = false
             this.members = response
@@ -902,6 +920,7 @@ export default {
             total_price: p.total_price,
             total_cost: p.total_cost,
             total_profit: p.total_profit,
+            note: p.note,
           }
           data.product_data.push(d)
         })
@@ -977,6 +996,7 @@ export default {
             total_price: p.total_price,
             total_cost: p.total_cost,
             total_profit: p.total_profit,
+            note: p.note,
           }
           data.add_products.push(d)
         }
@@ -1009,7 +1029,7 @@ export default {
         })
     },
     setDataBackToDefault() {
-      that.temp = {
+      this.temp = {
         id: undefined,
         sales_type: undefined,
         products: [{

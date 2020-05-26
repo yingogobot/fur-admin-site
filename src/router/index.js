@@ -68,7 +68,8 @@ export const constantRoutes = [
         name: 'member-sales-detail',
         meta: { title: '毛星球管理员主页', icon: 'international', affix: true }
       }
-    ]
+    ],
+    hidden: true
   },
   {
     path: '/',

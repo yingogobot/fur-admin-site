@@ -23,17 +23,28 @@ export default {
     height: {
       type: String,
       default: '300px'
+    },
+    chartData: {
+      type: Object,
+      required: true
     }
   },
   data() {
     return {
-      chart: null
+      chart: null,
+      listLoading: false,
     }
   },
   mounted() {
     this.$nextTick(() => {
       this.initChart()
     })
+  },
+  beforeRouteEnter (to, from, next) {
+    next(vm => { 
+      vm.getSalesReport()
+      next();
+    }) 
   },
   beforeDestroy() {
     if (!this.chart) {
@@ -43,6 +54,24 @@ export default {
     this.chart = null
   },
   methods: {
+    getSalesReport() {
+      this.listLoading = true
+      SalesAPI.getAllSales(this.listQuery)
+        .then(response => {
+          this.sales = response.data
+          this.listLoading = false
+          console.log(this.sales)
+          this.calculateRowSpan()
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message({
+            message: 'getAllSales 读取库存失败，请联系徐神检查',
+            type: 'error'
+          })
+          this.listLoading = false
+        })
+    },
     initChart() {
       this.chart = echarts.init(this.$el, 'macarons')
 

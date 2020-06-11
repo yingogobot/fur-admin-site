@@ -73,6 +73,13 @@ module.exports = merge(common, {
     new EnvironmentPlugin({
       NODE_ENV: 'development', // 除非有定义 process.env.NODE_ENV，否则就使用 'development'
       BASE_URL: 'http://localhost:8999/fur/v1/',
+      PRODUCT_SUB_TYPE_ID: {
+        MINI_FD: 4,
+        LARGE_FD: 8,
+        TREAT: 5,
+        DOG_FF: 0,
+        CAT_FF: 0
+      },
       DEBUG: true
     })
   ],

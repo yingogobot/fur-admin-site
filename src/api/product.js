@@ -22,6 +22,13 @@ export default {
         .catch((err) => reject(err))
     })
   },
+  getAllProductsBySubType(subType) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_all_products_by_sub_type', { sub_type: subType })
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
   getAllProductType() {
     return new Promise((resolve, reject) => {
       $.post('product/get_all_product_type')

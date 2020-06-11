@@ -73,6 +73,13 @@ module.exports = merge(common, {
     new EnvironmentPlugin({
       NODE_ENV: 'production', // 除非有定义 process.env.NODE_ENV，否则就使用 'development'
       BASE_URL: 'https://api.furfurland.com:8443/fur/v1/',
+      PRODUCT_SUB_TYPE_ID: {
+        MINI_FD: 4,
+        LARGE_FD: 8,
+        TREAT: 5,
+        DOG_FF: 16,
+        CAT_FF: 17
+      },
       DEBUG: true
     })
   ],

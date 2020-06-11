@@ -8,9 +8,8 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  getAllInventoryCount(typeId) {
+  getAllInventoryCount(data) {
     return new Promise((resolve, reject) => {
-      let data = {inventory_type: typeId}
       $.post('inventory/count_inventorys', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))

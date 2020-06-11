@@ -119,6 +119,7 @@
               <div class="input-title">客户姓名</div>
               <div class="input-title">手机号码</div>
               <div class="input-title">所在城市</div>
+              <div class="input-title">姓名</div>
               <div class="input-title">微信账号</div>
               <div class="input-title">淘宝账号</div>
               <div class="input-title">支付宝账号</div>
@@ -380,9 +381,7 @@ export default {
           gender: p.gender,
           birthday: moment(p.birthday).format('YYYY-MM-DD')
         }
-        if (d.name && d.name != '') {
-          data.pets.push(d)
-        }
+        data.pets.push(d)
       })
 
       MemberAPI.addMember(data)

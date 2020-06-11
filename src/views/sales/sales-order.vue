@@ -274,8 +274,27 @@
           </div>
         </div>
         <div>
-          <h3  v-if="this.formType === 1" style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 出库产品 </h3>
-          <h3  v-if="this.formType === 2" style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加出库产品 </h3>
+          <h3 v-if="this.formType === 1" style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 销售产品 </h3>
+          <h3  v-if="this.formType === 2" style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加销售产品 </h3>
+
+          <div style="margin-bottom: 20px"> 
+            作弊工具：
+            <el-button type="info" @click="addAllProductBySubType(1)">
+              添加小冻干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(2)">
+              添加大冻干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(3)">
+              添加肉干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(4)">
+              添加狗鲜粮套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(5)">
+              添加猫鲜粮套装
+            </el-button>
+          </div>
           <div style="display: inline-block;">
             <div style=" margin-bottom: 5px;">
               <div class="input-title input-title-extra-long">产品类型</div>
@@ -306,7 +325,7 @@
                 placeholder="产品名称" clearable 
                 @change="readProductInfo(p)"
                 @clear="readProductInfo(p)">
-                <el-option v-for="item in products" :key="item.id" :label="item.title" :value="item" />
+                <el-option v-for="item in temp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
               </el-select>
               <el-input placeholder="零售价" v-model="p.price" :disabled="true" class="filter-item inventory-in-input-short" />
               <el-input v-model="p.quantity" placeholder="数量" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)" />
@@ -751,6 +770,46 @@ export default {
     removeProduct(itemIndex) {
       this.$delete(this.temp.products, itemIndex)
       this.calculateOrderPrice()
+    },
+    addAllProductBySubType(subType) {
+      let id = 0
+      if (subType === 1) { //小包冻干
+        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
+      } else if (subType === 2) { //大包冻干
+        id = process.env.PRODUCT_SUB_TYPE_ID.LARGE_FD
+      } else if (subType === 3) { //肉干
+        id = process.env.PRODUCT_SUB_TYPE_ID.TREAT
+      } else if (subType === 4) { //犬用鲜粮
+        id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
+      } else if (subType === 5) { //猫用鲜粮
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
+      }
+      ProductAPI.getAllProductsBySubType(id)
+        .then(response => {
+            console.log(response)
+            response.sub_type[0].products.forEach(p => {
+               this.temp.products.push({
+                  product_type: response,
+                  product_sub_type: response.sub_type[0],
+                  product_id: p.id,
+                  product: p,
+                  quantity: 0,
+                  cost: p.cost,
+                  price: p.price,
+                  discount: 0,
+                  discount_rate: 1.0,
+                  note: undefined,
+                  key: this.temp.products.length + 1,
+                  total_price: 0
+                });
+            })
+          })
+          .catch(err => {
+            this.$message({
+              message: '作弊工具出问题了，请联系徐神检查',
+              type: 'error'
+            })
+          })
     },
     handleCreate() {
       this.dialogFormVisible = true

@@ -6,10 +6,10 @@
       <el-select v-model="listQuery.inventory_type" placeholder="入库类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in inventoryTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
+      <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.product_sub_type" placeholder="产品细类" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSelectedProducts(listQuery.product_sub_type)">
+      <el-select v-model="listQuery.product_sub_type" placeholder="产品细类" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in productSubTypes" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
       <el-select v-model="listQuery.product" placeholder="产品" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
@@ -46,7 +46,7 @@
       </el-table-column>
       <el-table-column label="入库时间" prop="inventory_type" width="150px" align="center">
         <template slot-scope="{row}">
-          <span>{{moment(row.created_at).format('YYYY-MM-DD')}}</span>
+          <span>{{moment(row.date).format('YYYY-MM-DD')}}</span>
         </template>
       </el-table-column>
       <el-table-column label="产品类型" width="150px" align="center">
@@ -79,16 +79,6 @@
           <span>￥{{ row.per_item_cost_atm }}</span>
         </template>
       </el-table-column>
-      <!-- <el-table-column label="申请人" width="150px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.ordered_by }}</span>
-        </template>
-      </el-table-column> -->
-      <!-- <el-table-column label="录入人" width="150px" align="center">
-        <template slot-scope="{row}">
-          <span>{{ row.added_by_name }}</span>
-        </template>
-      </el-table-column> -->
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getInventoryIn" />
@@ -109,6 +99,24 @@
         </div>
         <div>
           <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库产品 </h3>
+          <div style="margin-bottom: 20px"> 
+            作弊工具：
+            <el-button type="info" @click="addAllProductBySubType(1)">
+              添加小冻干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(2)">
+              添加大冻干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(3)">
+              添加肉干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(4)">
+              添加狗鲜粮套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(5)">
+              添加猫鲜粮套装
+            </el-button>
+          </div>
           <div style="display: inline-block;">
             <div style=" margin-bottom: 5px;">
               <div class="input-title">产品类型</div>
@@ -118,28 +126,27 @@
               <div class="input-title">入库数量</div>
               <div class="input-title">产品成本</div>
             </div>
-            <el-form-item v-for="(item, index) in temp.products" label="" :key="item.id" prop="product" style="margin-bottom: 10px;">
-              <el-select v-model="item.product_type" placeholder="选择产品类型" 
-                clearable style="width: 150px;" class="filter-item" 
-                @change="getSubType(item.product_type, item)"
-                @clear="getSubType(item.product_type, item)">
-                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item.id" />
+            <el-form-item v-for="(p, index) in temp.products" 
+              label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
+              <el-select v-model="p.product_type" value-key="id" placeholder="产品类型" 
+                clearable style="width: 150px;" class="filter-item">
+                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-select v-model="item.product_sub_type" class="filter-item" placeholder="选择产品分类" 
-                clearable style="width: 150px; margin-left: 10px;" 
-                @change="getProductBySubType(item.product_sub_type, item)" 
-                @clear="getProductBySubType(item.product_sub_type, item)">
-                <el-option v-for="item in productSubTypes" :key="item.id" :label="item.title" :value="item.id" />
+              <el-select v-if="temp.products[index].product_type" v-model="p.product_sub_type" value-key="id" style="width: 150px; margin-left: 10px;" class="filter-item" 
+                placeholder="产品分类" clearable 
+                @change="getProductBySubType(p.product_sub_type, p)" 
+                @clear="getProductBySubType(p.product_sub_type, p)">
+                <el-option  v-for="item in temp.products[index].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-select v-model="item.product_id" class="filter-item" placeholder="选择产品名称" 
-                clearable style="width: 150px; margin-left: 10px;" 
-                @change="readProductInfo(item)"
-                @clear="readProductInfo(item)">
-                <el-option v-for="item in products" :key="item.id" :label="item.title" :value="item.id" />
+              <el-select v-if="temp.products[index].product_sub_type" v-model="p.product" value-key="id" style="width: 150px; margin-left: 10px;" class="filter-item" 
+                placeholder="产品名称" clearable 
+                @change="readProductInfo(p)"
+                @clear="readProductInfo(p)">
+                <el-option v-for="item in temp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
               </el-select>
-              <el-input placeholder="产品型号" v-model="item.size" :disabled="true" style="width: 150px; margin-left: 10px;" class="filter-item" />
-              <el-input v-model="item.quantity" placeholder="填写入库数量" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
-              <el-input v-model="item.cost" placeholder="填写产品成本" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
+              <el-input placeholder="产品型号" v-model="p.size" :disabled="true" style="width: 150px; margin-left: 10px;" class="filter-item" />
+              <el-input v-model="p.quantity" placeholder="填写入库数量" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
+              <el-input v-model="p.cost" placeholder="填写产品成本" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
               <el-button style="margin-left: 40px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
             </el-form-item>
 
@@ -148,6 +155,16 @@
             </el-form-item>
           </div>
           <div>
+          <div style=" margin-bottom: 20px; ">
+            <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;" class="section-title"> 入库日期 </h3>
+            <el-date-picker
+              v-model="temp.date"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              :picker-options="pickerOptions">
+            </el-date-picker>
+          </div> 
           <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 入库备注 </h3>
           <el-input
             type="textarea"
@@ -213,13 +230,39 @@ export default {
             quantity: undefined,
             cost: undefined,
             size: '',
-            key: 1
+            key: 1,
+            date: undefined
           }
         ],
         note: undefined
       },
       dialogFormVisible: false,
-      rowSpans: null
+      rowSpans: null,
+      pickerOptions: {
+        disabledDate(time) {
+          return time.getTime() > Date.now();
+        },
+        shortcuts: [{
+          text: '今天',
+          onClick(picker) {
+            picker.$emit('pick', new Date());
+          }
+        }, {
+          text: '昨天',
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24);
+            picker.$emit('pick', date);
+          }
+        }, {
+          text: '一周前',
+          onClick(picker) {
+            const date = new Date();
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit('pick', date);
+          }
+        }]
+      }
     }
   },
   created() {
@@ -291,7 +334,8 @@ export default {
         })
     },
     getInventoryInCount() {
-      InventoryAPI.getAllInventoryCount(1)
+      this.listQuery.type_id = 1
+      InventoryAPI.getAllInventoryCount(this.listQuery)
         .then(response => {
           console.log(response)
           this.total = response.total
@@ -303,55 +347,12 @@ export default {
           this.productTypes = response
         })
     },
-    getSubType(productType, item) {
-      this.listQuery.product = undefined
-      this.listQuery.product_sub_type = undefined
-      this.productSubTypes = []
-      this.selectedProducts = []
-      if (productType) {
-        ProductAPI.getProductSubType({product_type_id: productType})
-          .then(response => {
-            this.productSubTypes = response
-          })
-      }
-
-      if (item) {
-        item.product_sub_type = undefined
-        item.product_id = undefined
-        item.cost = undefined
-        item.size = undefined
-        item.quantity = undefined
-      }
-    },
-    getSelectedProducts(subType) {
-
-      this.listQuery.product = undefined
-      this.selectedProducts = []
-      if (subType) {
-        ProductAPI.getProductBySubType({product_sub_type: subType})
-            .then(response => {
-              this.selectedProducts = response
-            })
-      }
-    },
     getProductBySubType(subType, item) {
-      if (subType) {
-        ProductAPI.getProductBySubType({product_sub_type: subType})
-          .then(response => {
-            this.products = response
-          })
-      }
-
-      if (item) {
-        item.product_id = undefined
-        item.cost = undefined
-        item.size = undefined
-        item.quantity = undefined
-      }
+      this.products = subType.products
     },
     readProductInfo(item) {
       this.products.forEach(p => {
-        if (p.id === item.product_id) {
+        if (p.id === item.product.id) {
           item.size = p.size;
           item.cost = p.cost;
         }
@@ -380,6 +381,7 @@ export default {
     handleFilter() {
       this.listQuery.page = 1
       this.getInventoryIn()
+      this.getInventoryInCount()
     },
     addMoreProduct() {
       this.temp.products.push({
@@ -388,11 +390,50 @@ export default {
         product_id: '',
         quantity: undefined,
         cost: undefined,
+        size: undefined,
         key: this.temp.products.length + 1
       });
     },
     removeProduct(itemIndex) {
       this.$delete(this.temp.products, itemIndex)
+    },
+    addAllProductBySubType(subType) {
+      let id = 0
+      if (subType === 1) { //小包冻干
+        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
+      } else if (subType === 2) { //大包冻干
+        id = process.env.PRODUCT_SUB_TYPE_ID.LARGE_FD
+      } else if (subType === 3) { //肉干
+        id = process.env.PRODUCT_SUB_TYPE_ID.TREAT
+      } else if (subType === 4) { //犬用鲜粮
+        id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
+      } else if (subType === 5) { //猫用鲜粮
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
+      }
+      ProductAPI.getAllProductsBySubType(id)
+        .then(response => {
+            console.log(response)
+            response.sub_type[0].products.forEach(p => {
+               this.temp.products.push({
+                  product_type: response,
+                  product_sub_type: response.sub_type[0],
+                  product_id: p.id,
+                  product: p,
+                  quantity: 0,
+                  cost: p.cost,
+                  price: p.price,
+                  size: p.size,
+                  note: undefined,
+                  key: this.temp.products.length + 1
+                });
+            })
+          })
+          .catch(err => {
+            this.$message({
+              message: '作弊工具出问题了，请联系徐神检查',
+              type: 'error'
+            })
+          })
     },
     handleCreate() {
       this.dialogFormVisible = true
@@ -428,7 +469,8 @@ export default {
           account_id: this.id,
           product_data: [],
           note: this.temp.note,
-          ordered_by: this.temp.ordered_by
+          ordered_by: this.temp.ordered_by,
+          date: this.temp.date
         }
 
         this.temp.products.forEach(p => {

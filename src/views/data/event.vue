@@ -2,7 +2,7 @@
   <div class="app-container">
     <div>
     <h2 class="title">线下活动</h2>
-    <el-button class="create-button" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
+    <el-button v-if="role === 7 || role === 1" class="create-button" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
         添加新活动
       </el-button>
     </div>
@@ -40,7 +40,7 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="300px" align="center">
+      <el-table-column v-if="role === 7 || role === 1" label="操作" width="300px" align="center">
         <template slot-scope="{row}">
           <el-button type="primary" plain @click="editEvent(row)">编辑</el-button>
           <el-button type="danger" plain @click="deleteEvent(row)">删除</el-button>

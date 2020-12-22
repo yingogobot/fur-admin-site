@@ -378,8 +378,10 @@ export default {
           name: p.name,
           type: p.type,
           sub_type: p.sub_type,
-          gender: p.gender,
-          birthday: moment(p.birthday).format('YYYY-MM-DD')
+          gender: p.gender
+        }
+        if (p.birthday) {
+          d.birthday = moment(p.birthday).format('YYYY-MM-DD')
         }
         data.pets.push(d)
       })
@@ -488,8 +490,10 @@ export default {
           name: p.name,
           type: p.type,
           sub_type: p.sub_type,
-          gender: p.gender,
-          birthday: moment(p.birthday).format('YYYY-MM-DD')
+          gender: p.gender
+        }
+        if (p.birthday) {
+          d.birthday = moment(p.birthday).format('YYYY-MM-DD')
         }
         data.add_pets.push(d)
       })

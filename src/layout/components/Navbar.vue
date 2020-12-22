@@ -5,10 +5,13 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="title">
-          <span style="display:inline-block; font-size: 35px; line-height: 25px; "> {{name}} </span>
+          <div style="display:inline-block; margin-right: 30px;">
+            <span style="display:block; font-size: 25px; line-height: 35px; "> {{name}}</span>
+            <span style="display:block; font-size: 15px; line-height: 15px; "> {{position}}</span>
+          </div>
           <div style="display:inline-block;">
             <span style="display:block; font-size: 15px; line-height: 25px; text-align: right;">今天也请加油为毛星球赚钱</span>
-            <span style="display:block; font-size: 15px; line-height: 25px; text-align: right;">当前版本：{{this.version()}}</span>
+            <span style="display:block; font-size: 15px; line-height: 25px; text-align: right;">当前系统版本：{{this.version()}}</span>
           </div>
         </div>
         <el-dropdown-menu slot="dropdown">
@@ -36,12 +39,14 @@ export default {
     ...mapGetters([
       'sidebar',
       'name',
+      'role',
+      'position',
       'device'
     ])
   },
   methods: {
     version() {
-      return '1.1.2 build 1'
+      return '2.0 build 1'
     },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')
@@ -58,7 +63,7 @@ export default {
 
 <style lang="scss" scoped>
 .navbar {
-  height: 50px;
+  height: 60px;
   overflow: hidden;
   position: relative;
   background: #fff;

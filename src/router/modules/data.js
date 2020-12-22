@@ -8,28 +8,10 @@ const dataRouter = {
   redirect: '/data/sales-channel',
   name: 'Data',
   meta: {
-    title: '数据系统',
+    title: '直销相关渠道',
     icon: 'table'
   },
   children: [
-    {
-      path: 'product-type',
-      component: () => import('@/views/data/product-type'),
-      name: 'Product Type',
-      meta: { title: '产品类型' }
-    },
-    {
-      path: 'product-sub-type',
-      component: () => import('@/views/data/product-sub-type'),
-      name: 'Product Type',
-      meta: { title: '产品细分' }
-    },
-    {
-      path: 'product',
-      component: () => import('@/views/data/product'),
-      name: 'Product Type',
-      meta: { title: '产品' }
-    },
     {
       path: 'sales-channel',
       component: () => import('@/views/data/sales-channel'),
@@ -41,12 +23,6 @@ const dataRouter = {
       component: () => import('@/views/data/event'),
       name: 'Event',
       meta: { title: '线下活动列表' }
-    },
-    {
-      path: 'resaler',
-      component: () => import('@/views/data/resaler'),
-      name: 'Resaler',
-      meta: { title: '分销渠道列表' }
     }
   ]
 }

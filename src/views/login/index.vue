@@ -142,7 +142,11 @@ export default {
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
             })
-            .catch(() => {
+            .catch((err) => {
+              this.$message({
+                message: err.body.error.message,
+                type: 'error'
+              })
               this.loading = false
             })
         } else {

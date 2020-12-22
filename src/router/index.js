@@ -5,10 +5,11 @@ Vue.use(Router)
 
 /* Layout */
 import Layout from '@/layout'
-import inventoryRouter from './modules/inventory'
+import productRouter from './modules/product'
 import dataRouter from './modules/data'
 import salesRouter from './modules/sales'
 import memberRouter from './modules/member'
+import resalerRouter from './modules/resaler'
 import memberSalesDetail from '@/views/member/member-sales-detail'
 
 /**
@@ -84,9 +85,10 @@ export const constantRoutes = [
       }
     ]
   },
-  inventoryRouter,
   salesRouter,
+  resalerRouter,
   memberRouter,
+  productRouter,
   dataRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]

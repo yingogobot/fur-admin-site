@@ -8,6 +8,8 @@ const UserObject = 'Admin-User'
 const state = {
   token: Cookies.get(TokenKey),
   name: Cookies.get(UserObject) ? JSON.parse(Cookies.get(UserObject)).name : '',
+  role: Cookies.get(UserObject) ? JSON.parse(Cookies.get(UserObject)).role : '',
+  position: Cookies.get(UserObject) ? JSON.parse(Cookies.get(UserObject)).position : '',
   avatar: 'https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif',
   id: Cookies.get(UserObject) ? JSON.parse(Cookies.get(UserObject)).id : ''
 }
@@ -22,11 +24,14 @@ const mutations = {
   SET_AVATAR: (state, avatar) => {
     state.avatar = avatar
   },
-  SET_ROLES: (state, roles) => {
-    state.roles = roles
+  SET_ROLE: (state, role) => {
+    state.roles = role
   },
   SET_ID: (state, id) => {
     state.id = id
+  },
+  SET_POSITION: (state, position) => {
+    state.position = position
   }
 }
 
@@ -39,7 +44,9 @@ const actions = {
       UserAPI.login({ login_name: login_name.trim(), password: password }).then(response => {
         state.toke = response.access_token
         state.name = response.name
+        state.role = response.role
         state.id = response.id
+        state.position = response.position
         Cookies.set(TokenKey, response.access_token)
         Cookies.set(UserObject, JSON.stringify(response))
         resolve()

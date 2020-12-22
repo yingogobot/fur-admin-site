@@ -15,14 +15,26 @@ const inventoryRouter = {
     {
       path: 'sales-order',
       component: () => import('@/views/sales/sales-order'),
-      name: 'SalesOrder',
-      meta: { title: '销售记录' }
+      name: 'Histroy Sales Order',
+      meta: { title: '历史销售记录(即将删除)' }
     },
     {
-      path: 'sales-report',
-      component: () => import('@/views/sales/sales-report'),
-      name: 'SalesReport',
-      meta: { title: '销售报告' }
+      path: 'direct-sales-order',
+      component: () => import('@/views/sales/direct-sales-order'),
+      name: 'Direct Sales Order',
+      meta: { title: '直营订单记录' }
+    },
+    {
+      path: 'resaler-sales-order',
+      component: () => import('@/views/sales/resaler-sales-order'),
+      name: 'Resaler Sales Order',
+      meta: { title: '分销订单记录' }
+    },
+    {
+      path: 'in-review-sales-order',
+      component: () => import('@/views/sales/in-review-order'),
+      name: 'In Review Sales Order',
+      meta: { title: '需审核订单列表' }
     }
   ]
 }

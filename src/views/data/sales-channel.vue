@@ -2,7 +2,7 @@
   <div class="app-container">
     <div>
     <h2 class="title">直销渠道</h2>
-      <el-button class="create-button" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
+      <el-button v-if="role === 7 || role === 1" class="create-button" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
         添加新直销渠道
       </el-button>
     </div>
@@ -30,7 +30,7 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="300px" align="center">
+      <el-table-column v-if="role === 7 || role === 1" label="操作" width="300px" align="center">
         <el-button type="primary" plain @click="editSalesChannel()">编辑</el-button>
         <el-button type="danger" plain @click="deleteSalesChannel()">删除</el-button>
       </el-table-column>
@@ -112,7 +112,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'id'
+      'id',
+      'role'
     ])
   },
   methods: {

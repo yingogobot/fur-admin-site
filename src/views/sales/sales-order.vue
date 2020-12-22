@@ -34,9 +34,6 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
         搜索
       </el-button>
-      <el-button class="filter-item" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
-        添加新销售
-      </el-button>
     </div>
 
     <h2>销售详情</h2>
@@ -187,11 +184,6 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="编辑订单" width="150px" align="center">
-        <template slot-scope="scope">
-          <el-button type="warning" plain @click="editSale(scope.row)">编辑</el-button>
-        </template>
-      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getAllSales" />
@@ -280,7 +272,10 @@
           <div style="margin-bottom: 20px"> 
             作弊工具：
             <el-button type="info" @click="addAllProductBySubType(1)">
-              添加小冻干套装
+              添加淘宝小冻干套装
+            </el-button>
+            <el-button type="info" @click="addAllProductBySubType(6)">
+              添加koko小冻干套装
             </el-button>
             <el-button type="info" @click="addAllProductBySubType(2)">
               添加大冻干套装
@@ -720,12 +715,11 @@ export default {
       // if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
         this.temp.selectedProducts.forEach(p => {
           total = total + p.total_price;
-          console.log(total)
           total_product_cost = total_product_cost + p.total_cost
         })
       // }
-      this.temp.order_total_price = roundToTwo( parseFloat(total) * parseFloat(this.temp.discount) + parseInt(this.temp.shipping_cost) - parseFloat(this.temp.coupon) - parseFloat(this.temp.manual_discount));
-      this.temp.order_total_profit = roundToTwo(this.temp.order_total_price - total_product_cost - parseInt(this.temp.shipping_cost) - this.temp.other_cost);
+      this.temp.order_total_price = roundToTwo( parseFloat(total) * parseFloat(this.temp.discount) + parseFloat(this.temp.shipping_cost) - parseFloat(this.temp.coupon) - parseFloat(this.temp.manual_discount));
+      this.temp.order_total_profit = roundToTwo(parseFloat(this.temp.order_total_price) - parseFloat(total_product_cost) - parseFloat(this.temp.shipping_cost) - parseFloat(this.temp.other_cost));
 
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
@@ -773,8 +767,10 @@ export default {
     },
     addAllProductBySubType(subType) {
       let id = 0
-      if (subType === 1) { //小包冻干
+      let discount = 1
+      if (subType === 1) { //小包冻干taobao
         id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
+        discount = 0.9
       } else if (subType === 2) { //大包冻干
         id = process.env.PRODUCT_SUB_TYPE_ID.LARGE_FD
       } else if (subType === 3) { //肉干
@@ -783,33 +779,40 @@ export default {
         id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
       } else if (subType === 5) { //猫用鲜粮
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
+      } else if (subType === 6) { //小包冻干Kokowan
+        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
+        discount = 0.4
       }
       ProductAPI.getAllProductsBySubType(id)
         .then(response => {
-            console.log(response)
-            response.sub_type[0].products.forEach(p => {
-               this.temp.products.push({
-                  product_type: response,
-                  product_sub_type: response.sub_type[0],
-                  product_id: p.id,
-                  product: p,
-                  quantity: 0,
-                  cost: p.cost,
-                  price: p.price,
-                  discount: 0,
-                  discount_rate: 1.0,
-                  note: undefined,
-                  key: this.temp.products.length + 1,
-                  total_price: 0
-                });
-            })
+          response.sub_type[0].products.forEach(p => {
+            if (subType !== 6 || (subType === 6 && p.id != 19)) { //小包冻干Kokowan
+              let pd = {
+                product_type: response,
+                product_sub_type: response.sub_type[0],
+                product_id: p.id,
+                product: p,
+                quantity: 1,
+                cost: p.cost,
+                price: p.price,
+                discount: 0,
+                discount_rate: discount,
+                note: undefined,
+                key: this.temp.products.length + 1,
+                total_price: 0
+              }
+              this.calculateTotalPrice(pd)
+              this.temp.products.push(pd);
+            }
           })
-          .catch(err => {
-            this.$message({
-              message: '作弊工具出问题了，请联系徐神检查',
-              type: 'error'
-            })
+          this.calculateOrderPrice()
+        })
+        .catch(err => {
+          this.$message({
+            message: '作弊工具出问题了，请联系徐神检查',
+            type: 'error'
           })
+        })
     },
     handleCreate() {
       this.dialogFormVisible = true

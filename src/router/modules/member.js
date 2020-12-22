@@ -15,13 +15,13 @@ const memberRouter = {
     {
       path: 'list',
       component: () => import('@/views/member/member-list'),
-      name: 'StorageCheck',
+      name: 'Member List',
       meta: { title: '会员列表' }
     },
     {
       path: 'member',
       component: () => import('@/views/member/member-chart'),
-      name: 'StorageCheck',
+      name: 'Member Report',
       meta: { title: '会员报告' }
     }
   ]

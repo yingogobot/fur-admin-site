@@ -195,6 +195,7 @@ import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
+import moment from 'moment'
 
 export default {
   name: 'ComplexTable',
@@ -353,8 +354,9 @@ export default {
     readProductInfo(item) {
       this.products.forEach(p => {
         if (p.id === item.product.id) {
-          item.size = p.size;
-          item.cost = p.cost;
+          item.product_id = p.id
+          item.size = p.size
+          item.cost = p.cost
         }
       })
     },
@@ -419,7 +421,7 @@ export default {
                   product_sub_type: response.sub_type[0],
                   product_id: p.id,
                   product: p,
-                  quantity: 0,
+                  quantity: 1,
                   cost: p.cost,
                   price: p.price,
                   size: p.size,
@@ -470,7 +472,7 @@ export default {
           product_data: [],
           note: this.temp.note,
           ordered_by: this.temp.ordered_by,
-          date: this.temp.date
+          date: moment(this.temp.date).format('YYYY-MM-DD')
         }
 
         this.temp.products.forEach(p => {

@@ -18,7 +18,7 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
         搜索
       </el-button>
-      <el-button class="filter-item" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
+      <el-button v-if="role === 1 || role === 7" class="filter-item" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
         添加新入库
       </el-button>
     </div>
@@ -146,7 +146,7 @@
               </el-select>
               <el-input placeholder="产品型号" v-model="p.size" :disabled="true" style="width: 150px; margin-left: 10px;" class="filter-item" />
               <el-input v-model="p.quantity" placeholder="填写入库数量" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
-              <el-input v-model="p.cost" placeholder="填写产品成本" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
+              <el-input v-model="p.per_item_cost_atm" placeholder="填写产品成本" class="filter-item" clearable style="width: 150px; margin-left: 10px;" />
               <el-button style="margin-left: 40px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
             </el-form-item>
 
@@ -270,7 +270,8 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'id'
+      'id',
+      'role'
     ])
   },
   beforeRouteEnter (to, from, next) {
@@ -477,9 +478,10 @@ export default {
 
         this.temp.products.forEach(p => {
           let d = {
-            id: p.product_id,
+            product_id: p.product_id,
             quantity: p.quantity,
-            cost: p.cost
+            promotion_quantity: 0,
+            per_item_cost_atm: p.cost
           }
           data.product_data.push(d)
         })
@@ -502,7 +504,8 @@ export default {
                       product_sub_type: '',
                       product_id: '',
                       quantity: undefined,
-                      cost: undefined,
+                      promotion_quantity: 0,
+                      per_item_cost_atm: undefined,
                       size: '',
                       key: 1
                     }

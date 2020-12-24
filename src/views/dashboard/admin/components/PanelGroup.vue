@@ -1,6 +1,6 @@
 <template>
   <div>
-  `  <el-row :gutter="40" class="panel-group">
+    <el-row :gutter="40" class="panel-group">
       <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('newVisitis')">
           <div class="card-panel-text"> 当前月份 </div>
@@ -116,8 +116,9 @@
               <div class="input-title input-title-extra-long">产品分类</div>
               <div class="input-title input-title-extra-long">产品名称</div>
               <div class="input-title input-title-short">零售价</div>
-              <div class="input-title input-title-short">数量</div>
-              <div class="input-title input-title">产品折扣</div>
+              <div class="input-title input-title-short">剩余库存</div>
+              <div class="input-title input-title-short">销售数量</div>
+              <div class="input-title input-title-short">赠送数量</div>
               <div class="input-title input-title">产品折扣</div>
               <div class="input-title input-title-extra-long">总价</div>
               <div class="input-title input-title-extra-long">备注</div>
@@ -143,7 +144,9 @@
                 <el-option v-for="item in temp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
               </el-select>
               <el-input placeholder="零售价" v-model="p.price" :disabled="true" class="filter-item inventory-in-input-short" />
-              <el-input v-model="p.quantity" placeholder="数量" class="filter-item inventory-in-input-short" clearable @change="calculateTotalPrice(p)" />
+              <el-input v-model="p.in_storage_quantity" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
+              <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p)" />
+              <el-input v-model="p.promotion_quantity" placeholder="赠送数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p)" />
               <el-input v-model="p.discount_rate" placeholder="折扣率" class="filter-item inventory-in-input" clearable @change="calculateTotalPrice(p)"  />
               <el-input v-model="p.total_price" placeholder="总价" class="filter-item inventory-in-input-extra" clearable :disabled="true"/>
               <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
@@ -162,8 +165,12 @@
           <div style=" margin-bottom: 20px; ">
             <h3 class="section-title"> 汇总信息 </h3>
             <div style="display: inline-block; width: 150px;">
-              <h3 class="middle-title"> 订单总价 </h3>
+              <h3 class="middle-title"> 订单销售总价 </h3>
               <el-input v-model="temp.order_total_price" placeholder="订单总价" class="filter-item" clearable :disabled="true" />
+            </div>
+            <div style="display: inline-block; width: 150px;">
+              <h3 class="middle-title"> 订单实收总价 </h3>
+              <el-input v-model="temp.order_total_revenue" placeholder="订单总价" class="filter-item" clearable :disabled="true" />
             </div>
             <div style="margin-left: 10px; display: inline-block; width: 150px;">
               <h3 class="middle-title"> 订单总利润 </h3>
@@ -208,6 +215,7 @@ import CountTo from 'vue-count-to'
 import SalesAPI from '@/api/sales.js'
 import ProductAPI from '@/api/product'
 import ResalerAPI from '@/api/resaler'
+import InventoryAPI from '@/api/inventory' 
 import { roundToTwo } from '@/utils'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
@@ -235,22 +243,11 @@ export default {
         id: undefined, //this should only exist when editing
         region: undefined,
         area: undefined,
-        products: [{
-            product_type: undefined,
-            product_sub_type: undefined,
-            product_id: '',
-            quantity: 0,
-            cost: undefined,
-            price: undefined,
-            discount_rate: undefined,
-            note: undefined,
-            key: 1,
-            total_price: 0,
-            note: undefined,
-          }
+        products: [
         ],
         order_total_price: 0,
         order_total_profit: 0,
+        order_total_revenue: 0,
         resaler: undefined,
         note: undefined,
         date: undefined,
@@ -292,6 +289,7 @@ export default {
     this.getInReivewSalesCount()
     this.getProductTypes()
     this.getRegions()
+    this.getAllInventorys()
     this.temp.date = new Date()
   },
   methods: {
@@ -305,6 +303,14 @@ export default {
       SalesAPI.getAllInReviewSalesCount(this.listQuery)
         .then(response => {
           this.inReivewSalesCount = response.total
+        })
+    },
+    getAllInventorys() {
+      InventoryAPI.fetchAllInventorys({page: 1, limit: 9999})
+        .then(response => {
+          this.inventories = response.data
+        })
+        .catch(err => {
         })
     },
     handleCreate() {
@@ -331,6 +337,8 @@ export default {
         item.cost = undefined
         item.size = undefined
         item.quantity = 0
+        item.promotion_quantity = 0
+        item.in_storage_quantity = undefined
         item.total_price = 0
       }
     },
@@ -352,6 +360,8 @@ export default {
         item.cost = undefined
         item.size = undefined
         item.quantity = 0
+        item.promotion_quantity = 0
+        item.in_storage_quantity = undefined
         item.total_price = 0
         item.discount_rate = undefined
       }
@@ -407,7 +417,8 @@ export default {
         product_type: undefined,
         product_sub_type: undefined,
         product_id: '',
-        quantity: undefined,
+        quantity: 0,
+        promotion_quantity: 0,
         cost: undefined,
         price: undefined,
         discount_rate: undefined,
@@ -445,12 +456,14 @@ export default {
                 product_id: p.id,
                 product: p,
                 quantity: 1,
+                promotion_quantity: 0,
                 cost: p.cost,
                 price: p.price,
                 discount_rate: p.resaler_discount,
                 note: undefined,
                 key: this.temp.products.length + 1,
-                total_price: 0
+                total_price: 0,
+                in_storage_quantity: p.in_storage_quantity
               }
               this.calculateTotalPrice(pd)
               this.temp.products.push(pd);
@@ -474,14 +487,28 @@ export default {
           item.cost = p.cost;
           item.price = p.price;
           item.discount_rate = p.resaler_discount;
+          item.in_storage_quantity = p.in_storage_quantity;
         }
       })
     },
     calculateTotalPrice(item) {
-      item.total_price = roundToTwo((item.price) * parseFloat(item.discount_rate) * item.quantity)
-      item.total_cost = roundToTwo(item.cost * item.quantity)
-      item.total_profit = roundToTwo(item.total_price - item.total_cost)
-      this.calculateOrderPrice()
+      console.log(item)
+      if (parseFloat(item.quantity) + parseFloat(item.promotion_quantity) > parseFloat(item.in_storage_quantity)) {
+        let total_out = parseFloat(item.quantity) + parseFloat(item.promotion_quantity)
+        let str = item.product.title + ' 库存仅为 >' + parseFloat(item.in_storage_quantity) +'<, 当前选择出库数量总数为 ' + total_out +'，请检查出库数量'
+        this.$alert(str, '失败', {
+          confirmButtonText: '确定',
+          callback: action => {
+            item.quantity = 0
+            item.promotion_quantity = 0
+          }
+        });
+      } else {
+        item.total_price = roundToTwo((item.price) * parseFloat(item.discount_rate) * item.quantity)
+        item.total_cost = roundToTwo(item.cost * (parseFloat(item.quantity) + parseFloat(item.promotion_quantity)))
+        item.total_profit = roundToTwo(item.total_price - item.total_cost)
+        this.calculateOrderPrice()
+      }
     },
     calculateOrderPrice() {
       let total = 0
@@ -490,7 +517,8 @@ export default {
         total = total + p.total_price;
         total_product_cost = total_product_cost + p.total_cost
       })
-      this.temp.order_total_price = roundToTwo(parseFloat(total) - parseFloat(this.temp.manual_discount));
+      this.temp.order_total_price = roundToTwo(parseFloat(total));
+      this.temp.order_total_revenue = roundToTwo(parseFloat(total) - parseFloat(this.temp.manual_discount));
       this.temp.order_total_profit = roundToTwo(parseFloat(this.temp.order_total_price) - parseFloat(total_product_cost));
     },
     addSalesOrder() {
@@ -501,35 +529,55 @@ export default {
       }).then(() => {
         this.sendAddSalesRequest()
       }).catch((err) => {  
-        console.log(err)      
+        console.log(err)
       });
     },
     sendAddSalesRequest() {
       let that = this
-      if (this.temp.products.length === 0) {
+      if (!this.temp.resaler) {
+        this.$message({
+          message: '请选择具体销售渠道',
+          type: 'error'
+        })
+      } else if (this.temp.products.length === 0) {
         this.$message({
           message: '至少要有一个或以上的产品入库',
           type: 'error'
         })
-      } else {
-        let data = {
-          sales_data: {
-            manual_discount: this.temp.manual_discount,
-            order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
-            order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
-            resaler_id: this.temp.resaler ? this.temp.resaler.id : null,
-            area_manager_atm: this.temp.area.manager_id,
-            region_manager_atm: this.temp.region.manager_id,
-            added_by: this.id,
-            date: moment(this.temp.date).format('YYYY-MM-DD'),
-            note: this.temp.note
-          },
-          product_data: [],
-        }
+      }else {
+        let failCheck = false
         this.temp.products.forEach(p => {
+          if (parseFloat(p.quantity) + parseFloat(p.promotion_quantity) === 0) {
+            failCheck = true
+          }
+        })
+
+        if (failCheck) {
+          this.$message({
+            message: '有一款或多款产品出库总数为0，请仔细检查',
+            type: 'error'
+          })
+        } else {
+          let data = {
+            sales_data: {
+              manual_discount: this.temp.manual_discount,
+              order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
+              order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
+              order_total_revenue: this.temp.order_total_revenue ? this.temp.order_total_revenue : 0,
+              resaler_id: this.temp.resaler ? this.temp.resaler.id : null,
+              area_manager_atm: this.temp.area.manager_id,
+              region_manager_atm: this.temp.region.manager_id,
+              added_by: this.id,
+              date: moment(this.temp.date).format('YYYY-MM-DD'),
+              note: this.temp.note
+            },
+            product_data: [],
+          }
+          this.temp.products.forEach(p => {
           let d = {
             product_id: p.product_id,
             quantity: p.quantity,
+            promotion_quantity: p.promotion_quantity,
             per_item_cost_atm: p.cost,
             per_item_price_atm: p.price,
             per_product_discount_ratio: p.discount_rate,
@@ -550,6 +598,7 @@ export default {
               callback: action => {
                 this.dialogFormVisible = false
                 this.getInReivewSalesCount()
+                this.setDataBackToDefault()
               }
             });
           })
@@ -560,8 +609,25 @@ export default {
             })
             that.listLoading = false
           })
+        }
       }
     },
+    setDataBackToDefault() {
+      this.temp = {
+        id: undefined, //this should only exist when editing
+        region: undefined,
+        area: undefined,
+        products: [
+        ],
+        order_total_price: 0,
+        order_total_profit: 0,
+        order_total_revenue : 0,
+        resaler: undefined,
+        note: undefined,
+        manual_discount: 0,
+        date: new Date()
+      }
+    }
   }
 }
 </script>

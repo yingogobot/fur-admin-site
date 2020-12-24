@@ -105,14 +105,29 @@
           <span>{{ row.size }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="数量" width="100px" align="center">
+      <el-table-column label="销售数量" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.quantity }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="订单总价" width="100px" align="center">
+      <el-table-column label="赠送数量" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.promotion_quantity }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="订单销售总价" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.order_total_price }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="手工改价" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.manual_discount }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="订单实收总价" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.order_total_revenue }}</span>
         </template>
       </el-table-column>
       <el-table-column label="全额付款" width="100px" align="center">
@@ -130,7 +145,7 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="role === 7" label="审核订单" width="300px" align="center">
+      <el-table-column v-if="role === 7 || role === 1" label="审核订单" width="300px" align="center">
         <template slot-scope="scope">
           <el-button v-if="scope.row.fully_paid === 0" type="warning" plain @click="updateSalesPaidStuats(scope.row)">确认收款</el-button>
           <el-button type="info" plain @click="updateDeliveryCode(scope.row)">发货</el-button>
@@ -336,7 +351,7 @@ export default {
 
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex < 10 || (columnIndex >= 14 && columnIndex <= 23)) {
+      if (columnIndex < 10 || (columnIndex >= 15 && columnIndex <= 23)) {
         let data = {
           rowspan: 0,
           colspan: 0

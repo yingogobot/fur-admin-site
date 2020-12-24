@@ -25,6 +25,21 @@
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="收货联系人" prop="inventory_type" width="250px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.contact }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="收货电话" prop="inventory_type" width="250px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.phone }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="收货地址" prop="inventory_type" width="250px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.address }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="渠道类型" prop="inventory_type" width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.resaler_type }}</span>
@@ -50,7 +65,7 @@
           <span>{{ row.region_manager }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="备注" prop="inventory_type" align="center">
+      <el-table-column label="备注" prop="inventory_type" width="300px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.note }}</span>
         </template>
@@ -74,13 +89,19 @@
         <div>
           <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 分销渠道信息 </h3>
           <div style="display: inline-block;">
-            <div style=" margin-bottom: 5px;">
+            <div style="margin-left: 10px; margin-bottom: 5px;">
               <div class="input-title">渠道名称</div>
+              <div class="input-title">联系人</div>
+              <div class="input-title">电话</div>
+              <div class="input-title">地址</div>
               <div class="input-title">渠道类型</div>
               <div class="input-title">所属地区</div>
             </div>
             <el-form-item label="" prop="resaler" style="margin-bottom: 10px;">
               <el-input placeholder="渠道名称" v-model="temp.name" style="width: 200px;" class="filter-item" />
+              <el-input placeholder="联系人" v-model="temp.contact" style="width: 200px;" class="filter-item" />
+              <el-input placeholder="电话" v-model="temp.phone" style="width: 200px;" class="filter-item" />
+              <el-input placeholder="地址" v-model="temp.address" style="width: 200px;" class="filter-item" />
               <el-select v-model="temp.type" value-key="id" placeholder="类型" 
                 clearable style="width: 200px;" class="filter-item" >
                 <el-option v-for="item in resalerTypes" :key="item.id" :label="item.title" :value="item.id" />
@@ -238,7 +259,6 @@ export default {
                 this.dialogFormVisible = false;
                 this.temp = {
                   name:null,
-                  manager: null,
                   note: null,
                   address: null
                 }
@@ -321,6 +341,5 @@ export default {
     width: 200px;
     line-height: 25px;
     font-size: 14px;
-    margin-left: 10px;
   }
 </style>

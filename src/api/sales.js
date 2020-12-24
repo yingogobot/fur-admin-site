@@ -106,4 +106,11 @@ export default {
         .catch((err) => reject(err))
     })
   },
+  getGeneralSalesReport(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/general_sales_report', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  } 
 }

@@ -8,7 +8,7 @@ const inventoryRouter = {
   redirect: '/sales/sales-order',
   name: 'Sales',
   meta: {
-    title: '销售数据',
+    title: '销售订单',
     icon: 'table'
   },
   children: [

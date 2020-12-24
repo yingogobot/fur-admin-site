@@ -19,10 +19,10 @@
       <el-select v-model="listQuery.resaler_id" placeholder="分销渠道" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in resalers" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.area_manager_id" placeholder="地区经理" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-model="listQuery.area_manager_atm" placeholder="地区经理" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in areaManager" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
-      <el-select v-model="listQuery.region_manager_id" placeholder="大区经理" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+      <el-select v-model="listQuery.region_manager_atm" placeholder="大区经理" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
         <el-option v-for="item in regionManager" :key="item.id" :label="item.name" :value="item.id" />
       </el-select>
       <el-select v-model="listQuery.product_type" placeholder="产品类型" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getSubType(listQuery.product_type)">
@@ -104,9 +104,14 @@
           <span>{{ row.size }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="数量" width="100px" align="center">
+      <el-table-column label="销售数量" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.quantity }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="赠送数量" width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.promotion_quantity }}</span>
         </template>
       </el-table-column>
       <el-table-column label="销售价格" width="100px" align="center">
@@ -401,7 +406,7 @@ export default {
 
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex < 7 || (columnIndex >= 15 && columnIndex <= 23)) {
+      if (columnIndex < 7 || (columnIndex >= 16 && columnIndex <= 23)) {
         let data = {
           rowspan: 0,
           colspan: 0

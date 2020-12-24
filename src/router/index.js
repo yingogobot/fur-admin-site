@@ -10,6 +10,8 @@ import dataRouter from './modules/data'
 import salesRouter from './modules/sales'
 import memberRouter from './modules/member'
 import resalerRouter from './modules/resaler'
+import reportRouter from './modules/report'
+import inventoryRouter from './modules/inventory'
 import memberSalesDetail from '@/views/member/member-sales-detail'
 
 /**
@@ -85,11 +87,13 @@ export const constantRoutes = [
       }
     ]
   },
+  inventoryRouter,
   salesRouter,
   resalerRouter,
   memberRouter,
   productRouter,
   dataRouter,
+  // reportRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]
 

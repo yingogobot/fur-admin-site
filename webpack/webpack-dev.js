@@ -78,7 +78,8 @@ module.exports = merge(common, {
         LARGE_FD: 8,
         TREAT: 5,
         DOG_FF: 0,
-        CAT_FF: 0
+        CAT_FF: 0,
+        CAT_SIP: 0
       },
       DEBUG: true
     })

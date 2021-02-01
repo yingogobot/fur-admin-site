@@ -96,7 +96,7 @@ export default {
       rowSpans: null,
       listQuery: {
         page: 1,
-        limit: 10,
+        limit: 99999,
         product_type: undefined,
         product_sub_type: undefined,
         product: undefined,

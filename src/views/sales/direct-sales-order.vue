@@ -706,31 +706,28 @@ export default {
         id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
       } else if (subType === 5) { //猫用鲜粮
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
-      } else if (subType === 6) { //小包冻干Kokowan
-        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
-        discount = 0.4
+      } else if (subType === 6) { //猫条
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_SIP
       }
       ProductAPI.getAllProductsBySubType(id)
         .then(response => {
           response.sub_type[0].products.forEach(p => {
-            if (subType !== 6 || (subType === 6 && p.id != 19)) { //小包冻干Kokowan
-              let pd = {
-                product_type: response,
-                product_sub_type: response.sub_type[0],
-                product_id: p.id,
-                product: p,
-                quantity: 1,
-                cost: p.cost,
-                price: p.price,
-                discount: 0,
-                discount_rate: discount,
-                note: undefined,
-                key: this.temp.products.length + 1,
-                total_price: 0
-              }
-              this.calculateTotalPrice(pd)
-              this.temp.products.push(pd);
+            let pd = {
+              product_type: response,
+              product_sub_type: response.sub_type[0],
+              product_id: p.id,
+              product: p,
+              quantity: 1,
+              cost: p.cost,
+              price: p.price,
+              discount: 0,
+              discount_rate: discount,
+              note: undefined,
+              key: this.temp.products.length + 1,
+              total_price: 0
             }
+            this.calculateTotalPrice(pd)
+            this.temp.products.push(pd);
           })
           this.calculateOrderPrice()
         })

@@ -68,6 +68,10 @@ module.exports = {
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test
 
+    config.module
+      .rule('jpg')
+      .exclude.add(resolve('src/static/assets/images'))
+      .end()
     // set svg-sprite-loader
     config.module
       .rule('svg')

@@ -93,7 +93,7 @@ export const constantRoutes = [
   memberRouter,
   productRouter,
   dataRouter,
-  // reportRouter,
+  reportRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]
 

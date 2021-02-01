@@ -10,6 +10,7 @@
         start-placeholder="开始月份"
         end-placeholder="结束月份">
       </el-date-picker>
+      <el-input v-model="listQuery.resaler_sales_id" placeholder="订单编号" style="width: 150px; margin-left: 15px;" class="filter-item"  />
       <el-select v-model="listQuery.region_id" placeholder="分销大区" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getAreas(listQuery.region_id)">
         <el-option v-for="item in resalerRegions" :key="item.id" :label="item.title" :value="item.id" />
       </el-select>
@@ -121,7 +122,7 @@
       </el-table-column>
       <el-table-column label="单品折扣率" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.per_product_discount_ratio == 1 ? "原价" : (row.per_product_discount_ratio == 0 ? "免费赠品" : row.per_product_discount_ratio * 10 + "折") }}</span>
+          <span>{{ row.per_product_discount_ratio == 1 ? "原价" : (row.per_product_discount_ratio == 0 ? "免费赠品" : Math.floor(row.per_product_discount_ratio * 100) 1/ 100 * 10 + "折") }}</span>
         </template>
       </el-table-column>
       <el-table-column label="单品总价" width="100px" align="center">
@@ -131,7 +132,17 @@
       </el-table-column>
       <el-table-column label="订单总价" width="100px" align="center">
         <template slot-scope="{row}">
-          <span>￥{{ row.order_total_price }}</span>
+          <span>￥{{ row.order_total_revenue }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="支付公司" width="200px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.payment_company_title }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="支付渠道" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.payment_channel_title }}</span>
         </template>
       </el-table-column>
       <el-table-column label="全额付款" width="100px" align="center">
@@ -197,6 +208,7 @@ export default {
       listQuery: {
         page: 1,
         limit: 10,
+        resaler_sales_id: undefined,
         product_type: undefined,
         product_sub_type: undefined,
         area_id: undefined,
@@ -462,31 +474,28 @@ export default {
         id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
       } else if (subType === 5) { //猫用鲜粮
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
-      } else if (subType === 6) { //小包冻干Kokowan
-        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
-        discount = 0.4
+      } else if (subType === 6) { //猫条
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_SIP
       }
       ProductAPI.getAllProductsBySubType(id)
         .then(response => {
           response.sub_type[0].products.forEach(p => {
-            if (subType !== 6 || (subType === 6 && p.id != 19)) { //小包冻干Kokowan
-              let pd = {
-                product_type: response,
-                product_sub_type: response.sub_type[0],
-                product_id: p.id,
-                product: p,
-                quantity: 1,
-                cost: p.cost,
-                price: p.price,
-                discount: 0,
-                discount_rate: discount,
-                note: undefined,
-                key: this.temp.products.length + 1,
-                total_price: 0
-              }
-              this.calculateTotalPrice(pd)
-              this.temp.products.push(pd);
+            let pd = {
+              product_type: response,
+              product_sub_type: response.sub_type[0],
+              product_id: p.id,
+              product: p,
+              quantity: 1,
+              cost: p.cost,
+              price: p.price,
+              discount: 0,
+              discount_rate: discount,
+              note: undefined,
+              key: this.temp.products.length + 1,
+              total_price: 0
             }
+            this.calculateTotalPrice(pd)
+            this.temp.products.push(pd);
           })
           this.calculateOrderPrice()
         })

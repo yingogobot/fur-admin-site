@@ -40,7 +40,8 @@ var plugins = [
         LARGE_FD: 8,
         TREAT: 5,
         DOG_FF: 16,
-        CAT_FF: 17
+        CAT_FF: 17,
+        CAT_SIP: 18
       },
       DEBUG: false
     })
@@ -139,32 +140,7 @@ module.exports = merge(common, {
                 test: /\.(png|svg|jpg|gif)$/,
                 use: [
                     {
-                        loader: 'file-loader',
-                        options: {
-                            limit: 5000,
-                            name: 'imgs/[hash].[ext]',
-                        },
-                    },
-                    // 图片压缩
-                    {
-                        loader: 'image-webpack-loader',
-                        options: {
-                            //   bypassOnDebug: true,
-                            mozjpeg: {
-                                progressive: true,
-                                quality: 65,
-                            },
-                            optipng: {
-                                enabled: false,
-                            },
-                            pngquant: {
-                                quality: '65-90',
-                                speed: 4,
-                            },
-                            gifsicle: {
-                                interlaced: false,
-                            },
-                        },
+                        loader: 'url-loader',
                     },
                 ],
             },

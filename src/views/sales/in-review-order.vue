@@ -130,6 +130,16 @@
           <span>{{ row.order_total_revenue }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="支付公司" width="200px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.payment_company_title }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="支付渠道" width="150px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.payment_channel_title }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="全额付款" width="100px" align="center">
         <template slot-scope="{row}">
           <el-tag class="tag" :color="row.fully_paid === 0 ? '#e74c3c' : '#2ecc71'" >{{ row.fully_paid === 1 ? '是' : '否' }}</el-tag>

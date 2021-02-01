@@ -1,7 +1,7 @@
 <template>
-  <div class="app-container">
+  <div v-if="role === 1" class="app-container">
     <div class="filter-container">
-      <h2>筛选结果</h2>
+      <h2 style="display: inline-block;" >选择月份</h2>
       <el-date-picker
         v-model="listQuery.date"
         class="filter-item" style="margin-left: 15px;"
@@ -16,7 +16,10 @@
       </el-button>
     </div>
 
-    <h2>{{moment(this.listQuery.date[0]).format('YYYY-MM-01')}} 至 {{moment(this.listQuery.date[1]).format('YYYY-MM-01')}} 销售基本数据</h2>
+    <div>
+      <h2 style="display: inline-block;">{{moment(this.listQuery.date[0]).format('YYYY-MM-01')}} 至 {{moment(this.listQuery.date[1]).format('YYYY-MM-01')}} </h2>
+      <h2 style="color:red; display: inline-block;">销售总额 {{totalSales}}</h2>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -25,6 +28,7 @@
       border
       fit
       style="width: 100%;"
+      v-if="role === 6 || role === 1" 
     >
       <el-table-column label="分销大区" prop="id" width="80px" align="center">
         <template slot-scope="{row}">
@@ -73,11 +77,15 @@
       </el-table-column>
     </el-table>
   </div>
+  <div v-else class="app-container">
+    <h2> 并没有权限查看 Please Get out! </h2>
+    <img :src="errGif" width="400" height="400" alt="No Access">
+  </div>
 </template>
 
 <script>
+import errGif from '../../assets/images/no-access.jpg'
 import SalesAPI from '@/api/sales.js'
-
 import waves from '@/directive/waves' // waves directive
 import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -94,33 +102,17 @@ export default {
       tableKey: 0,
       listLoading: false,
       sales: null,
+      totalSales: 0,
       listQuery: {
         page: 1,
         limit: 100,
         date: []
       },
       rowSpans: null,
-      gridData: [{
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }]
+      errGif: errGif
     }
   },
   created() {
-    console.log('sdfsfsdfsfsfs')
     this.listQuery.date = [new Date(), moment().add(1, 'months')]
   },
   computed: {
@@ -164,64 +156,73 @@ export default {
       this.rowSpans = g;
     },
     getReport() {
-      console.log(this.listQuery.date)
-      this.listLoading = true
-      if (this.listQuery.date && this.listQuery.date.length > 1) {
-        this.listQuery.start_date = moment(this.listQuery.date[0]).format('YYYY-MM-01')
-        this.listQuery.end_date = moment(this.listQuery.date[1]).format('YYYY-MM-01')
-      }
-      console.log(this.listQuery)
-      SalesAPI.getGeneralSalesReport(this.listQuery)
-        .then(response => {
-          let tempResult = []
-          this.listLoading = false
-          response.forEach(s => {
-            let found = false
-            tempResult.forEach(r => {
-              if (r.area_id === s.area_id) {
-                let p = {
-                  product_type_id: s.product_type_id,
-                  product_type_title: s.product_type_title,
-                  total_product_sales: s.total_product_sales
-                }
-                r.products_sales.push(p)
-                found = true
-              }
-            })
-
-            if (!found) {
-              let t = {
-                region_id: s.region_id,
-                region_title: s.region_title,
-                region_manager_id: s.region_manager_id,
-                region_manager_name: s.region_manager_name,
-                area_id: s.area_id,
-                area_title: s.area_title,
-                area_manager_name: s.area_manager_name,
-                area_total_sales: s.area_total_sales,
-                region_total_sales: s.region_total_sales,
-                products_sales: [
-                  {
+      if (this.role === 1 || this.role === 6) {
+        this.listLoading = true
+        if (this.listQuery.date && this.listQuery.date.length > 1) {
+          this.listQuery.start_date = moment(this.listQuery.date[0]).format('YYYY-MM-01')
+          this.listQuery.end_date = moment(this.listQuery.date[1]).format('YYYY-MM-01')
+        }
+        SalesAPI.getGeneralSalesReport(this.listQuery)
+          .then(response => {
+            let tempResult = []
+            this.listLoading = false
+            let totalSales = 0.0
+            response.forEach(s => {
+              let found = false
+              tempResult.forEach(r => {
+                if (r.area_id === s.area_id) {
+                  let p = {
                     product_type_id: s.product_type_id,
                     product_type_title: s.product_type_title,
                     total_product_sales: s.total_product_sales
                   }
-                ]
+                  r.products_sales.push(p)
+                  found = true
+                }
+              })
+
+              if (!found) {
+                let t = {
+                  region_id: s.region_id,
+                  region_title: s.region_title,
+                  region_manager_id: s.region_manager_id,
+                  region_manager_name: s.region_manager_name,
+                  area_id: s.area_id,
+                  area_title: s.area_title,
+                  area_manager_name: s.area_manager_name,
+                  area_total_sales: s.area_total_sales,
+                  region_total_sales: s.region_total_sales,
+                  products_sales: [
+                    {
+                      product_type_id: s.product_type_id,
+                      product_type_title: s.product_type_title,
+                      total_product_sales: s.total_product_sales
+                    }
+                  ]
+                }
+
+
+                if (s.area_total_sales) {
+                  console.log(s)
+                  console.log(s.area_total_sales)
+                  totalSales = parseFloat(totalSales) + parseFloat(s.area_total_sales)
+                } 
+                this.totalSales = Math.floor(totalSales * 100) / 100
+                tempResult.push(t)
               }
-              tempResult.push(t)
-            }
+            })
+            this.sales = tempResult
+            this.calculateRowSpan()
           })
-          this.sales = tempResult
-          this.calculateRowSpan()
-        })
-        .catch(err => {
-          console.log(err)
-          this.$message({
-            message: 'getAllSales 读取库存失败，请联系徐神检查',
-            type: 'error'
+          .catch(err => {
+            console.log(err)
+            this.$message({
+              message: 'getAllSales 读取库存失败，请联系徐神检查',
+              type: 'error'
+            })
+            this.listLoading = false
           })
-          this.listLoading = false
-        })
+      }
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex < 3 ) {

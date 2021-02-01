@@ -20,9 +20,9 @@ const reportRouter = {
     },
     {
       path: 'detail-sales-report',
-      component: () => import('@/views/sales/direct-sales-order'),
+      component: () => import('@/views/report/detail-sales-report'),
       name: 'Direct Sales Order',
-      meta: { title: '销售详细报告（开发中...）' }
+      meta: { title: '销售详细报告' }
     }
   ]
 }

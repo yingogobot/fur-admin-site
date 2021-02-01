@@ -28,7 +28,7 @@
 
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('purchases')">
-          <div class="card-panel-text"> 新建订单 (尚未开通) </div>
+          <div class="card-panel-text"> 新建订单 </div>
           <div class="card-panel-button">
             <el-button type="primary" plain @click="handleCreate">新建分销订单</el-button>
             <!-- <el-button type="warning" plain @click="">直销订单</el-button> -->
@@ -50,6 +50,7 @@
         :model="temp" 
         label-position="left" 
         label-width="10px" 
+        v-loading="listLoading"
         style="margin-left:20px;">
         <div style="display: inline-block;">
           <div style="display: inline-block; margin-bottom: 40px;">
@@ -106,7 +107,7 @@
             <el-button type="info" @click="addAllProductBySubType(5)">
               添加猫鲜粮套装
             </el-button>
-            <el-button type="info" @click="addAllProductBySubType(5)">
+            <el-button type="info" @click="addAllProductBySubType(6)">
               添加猫条套装
             </el-button>
           </div>
@@ -177,6 +178,22 @@
               <el-input v-model="temp.order_total_profit" placeholder="订单总利润" class="filter-item" clearable :disabled="true" />
             </div>
           </div>
+          <div style="margin-bottom: 20px;">
+            <div style="display: inline-block;">
+              <h3 class="section-title"> 支付公司 </h3>
+              <el-select v-model="temp.payment_company" value-key="id" class="filter-item" 
+                  placeholder="支付公司" clearable style="width: 400px;">
+                  <el-option v-for="item in paymentCompany" :key="item.id" :label="item.title" :value="item" />
+                </el-select>
+            </div>
+            <div style="display: inline-block; margin-left: 20px">
+              <h3 class="section-title"> 支付方式 </h3>
+              <el-select v-model="temp.payment_channel" value-key="id" class="filter-item" 
+                  placeholder="支付方式" clearable style="width: 300px;">
+                  <el-option v-for="item in paymentChannel" :key="item.id" :label="item.title" :value="item" />
+                </el-select>
+            </div>
+          </div>
           <div style=" margin-bottom: 20px; ">
             <h3 class="section-title"> 订单日期 </h3>
             <el-date-picker
@@ -202,7 +219,7 @@
         <el-button @click="dialogFormVisible = false">
           取消
         </el-button>
-        <el-button type="primary" @click="addSalesOrder()">
+        <el-button type="primary" :loading="listLoading" @click="addSalesOrder()">
           提交新的销售订单
         </el-button>
       </div>
@@ -216,7 +233,7 @@ import SalesAPI from '@/api/sales.js'
 import ProductAPI from '@/api/product'
 import ResalerAPI from '@/api/resaler'
 import InventoryAPI from '@/api/inventory' 
-import { roundToTwo } from '@/utils'
+import { roundToTwo, roundToOneDecimal } from '@/utils'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
 
@@ -231,6 +248,7 @@ export default {
         page: 1,
         limit: 10,
       },
+      listLoading: false,
       productTypes: [],
       productSubTypes: [],
       selectedProducts: [],
@@ -253,6 +271,30 @@ export default {
         date: undefined,
         manual_discount: 0
       },
+      paymentChannel: [
+        {
+          id: 1,
+          title: '对公转账'
+        },
+        {
+          id: 2,
+          title: '支付宝'
+        },
+        {
+          id: 3,
+          title: '微信转账'
+        }
+      ],
+      paymentCompany: [
+        {
+          id: 1,
+          title: '上海毗邻星宠物用品有限公司（一般纳税人，需要发票）'
+        },
+        {
+          id: 2,
+          title: '上海毛星球宠物食品有限公司（普通纳税人，不要发票）'
+        }
+      ],
       pickerOptions: {
         disabledDate(time) {
           return time.getTime() > Date.now();
@@ -443,31 +485,29 @@ export default {
         id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
       } else if (subType === 5) { //猫用鲜粮
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
-      } else if (subType === 6) { //小包冻干Kokowan
-        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
+      } else if (subType === 6) { //猫条
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_SIP
       }
       ProductAPI.getAllProductsBySubType(id)
         .then(response => {
           response.sub_type[0].products.forEach(p => {
-            if (subType !== 6 || (subType === 6 && p.id != 19)) { //小包冻干Kokowan
-              let pd = {
-                product_type: response,
-                product_sub_type: response.sub_type[0],
-                product_id: p.id,
-                product: p,
-                quantity: 1,
-                promotion_quantity: 0,
-                cost: p.cost,
-                price: p.price,
-                discount_rate: p.resaler_discount,
-                note: undefined,
-                key: this.temp.products.length + 1,
-                total_price: 0,
-                in_storage_quantity: p.in_storage_quantity
-              }
-              this.calculateTotalPrice(pd)
-              this.temp.products.push(pd);
+            let pd = {
+              product_type: response,
+              product_sub_type: response.sub_type[0],
+              product_id: p.id,
+              product: p,
+              quantity: 1,
+              promotion_quantity: 0,
+              cost: p.cost,
+              price: p.price,
+              discount_rate: p.resaler_discount,
+              note: undefined,
+              key: this.temp.products.length + 1,
+              total_price: 0,
+              in_storage_quantity: p.in_storage_quantity
             }
+            this.calculateTotalPrice(pd)
+            this.temp.products.push(pd);
           })
           this.calculateOrderPrice()
         })
@@ -492,23 +532,23 @@ export default {
       })
     },
     calculateTotalPrice(item) {
-      console.log(item)
-      if (parseFloat(item.quantity) + parseFloat(item.promotion_quantity) > parseFloat(item.in_storage_quantity)) {
-        let total_out = parseFloat(item.quantity) + parseFloat(item.promotion_quantity)
-        let str = item.product.title + ' 库存仅为 >' + parseFloat(item.in_storage_quantity) +'<, 当前选择出库数量总数为 ' + total_out +'，请检查出库数量'
-        this.$alert(str, '失败', {
-          confirmButtonText: '确定',
-          callback: action => {
-            item.quantity = 0
-            item.promotion_quantity = 0
-          }
-        });
-      } else {
-        item.total_price = roundToTwo((item.price) * parseFloat(item.discount_rate) * item.quantity)
+      // console.log(item)
+      // if (parseFloat(item.quantity) + parseFloat(item.promotion_quantity) > parseFloat(item.in_storage_quantity)) {
+      //   let total_out = parseFloat(item.quantity) + parseFloat(item.promotion_quantity)
+      //   let str = item.product.title + ' 库存仅为 >' + parseFloat(item.in_storage_quantity) +'<, 当前选择出库数量总数为 ' + total_out +'，请检查出库数量'
+      //   this.$alert(str, '失败', {
+      //     confirmButtonText: '确定',
+      //     callback: action => {
+      //       item.quantity = 0
+      //       item.promotion_quantity = 0
+      //     }
+      //   });
+      // } else {
+        item.total_price = roundToOneDecimal((item.price) * parseFloat(item.discount_rate)) * item.quantity
         item.total_cost = roundToTwo(item.cost * (parseFloat(item.quantity) + parseFloat(item.promotion_quantity)))
         item.total_profit = roundToTwo(item.total_price - item.total_cost)
         this.calculateOrderPrice()
-      }
+      // }
     },
     calculateOrderPrice() {
       let total = 0
@@ -544,7 +584,17 @@ export default {
           message: '至少要有一个或以上的产品入库',
           type: 'error'
         })
-      }else {
+      } else if (!this.temp.payment_channel) {
+        this.$message({
+          message: '支付渠道必须选择',
+          type: 'error'
+        })
+      } else if (!this.temp.payment_company) {
+        this.$message({
+          message: '支付公司必须选择',
+          type: 'error'
+        })
+      } else {
         let failCheck = false
         this.temp.products.forEach(p => {
           if (parseFloat(p.quantity) + parseFloat(p.promotion_quantity) === 0) {
@@ -569,47 +619,49 @@ export default {
               region_manager_atm: this.temp.region.manager_id,
               added_by: this.id,
               date: moment(this.temp.date).format('YYYY-MM-DD'),
-              note: this.temp.note
+              note: this.temp.note,
+              payment_channel_id: this.temp.payment_channel.id,
+              payment_company_id: this.temp.payment_company.id
             },
             product_data: [],
           }
           this.temp.products.forEach(p => {
-          let d = {
-            product_id: p.product_id,
-            quantity: p.quantity,
-            promotion_quantity: p.promotion_quantity,
-            per_item_cost_atm: p.cost,
-            per_item_price_atm: p.price,
-            per_product_discount_ratio: p.discount_rate,
-            total_price: p.total_price,
-            total_cost: p.total_cost,
-            total_profit: p.total_profit,
-            note: p.note,
-          }
-          data.product_data.push(d)
-        })
+            let d = {
+              product_id: p.product_id,
+              quantity: p.quantity,
+              promotion_quantity: p.promotion_quantity,
+              per_item_cost_atm: p.cost,
+              per_item_price_atm: p.price,
+              per_product_discount_ratio: p.discount_rate,
+              total_price: p.total_price,
+              total_cost: p.total_cost,
+              total_profit: p.total_profit,
+              note: p.note,
+            }
+            data.product_data.push(d)
+          })
 
-        this.listLoading = true
-        SalesAPI.addNewResalerSalesRequest(data)
-          .then(response => {
-            that.listLoading = false
-            this.$alert('下单成功', '成功', {
-              confirmButtonText: '确定',
-              callback: action => {
-                this.dialogFormVisible = false
-                this.getInReivewSalesCount()
-                this.setDataBackToDefault()
-              }
-            });
-          })
-          .catch(err => {
-            that.$message({
-              message: '下单失败，请联系徐神检查',
-              type: 'error'
+          this.listLoading = true
+          SalesAPI.addNewResalerSalesRequest(data)
+            .then(response => {
+              this.listLoading = false
+              this.$alert('下单成功', '成功', {
+                confirmButtonText: '确定',
+                callback: action => {
+                  this.dialogFormVisible = false
+                  this.getInReivewSalesCount()
+                  this.setDataBackToDefault()
+                }
+              });
             })
-            that.listLoading = false
-          })
-        }
+            .catch(err => {
+              that.$message({
+                message: '下单失败，请联系徐神检查',
+                type: 'error'
+              })
+              this.listLoading = false
+            })
+          }
       }
     },
     setDataBackToDefault() {

@@ -349,3 +349,7 @@ export function removeClass(ele, cls) {
 export function roundToTwo(num) {    
   return +(Math.round(num + "e+2")  + "e-2");
 }
+
+export function roundToOneDecimal(num) {    
+  return +(Math.round(num + "e+1")  + "e-1");
+}

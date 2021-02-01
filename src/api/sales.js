@@ -112,5 +112,12 @@ export default {
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
-  } 
+  },
+  getRegionManagerRelatedSales(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/get_region_manager_related_sales', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  }  
 }

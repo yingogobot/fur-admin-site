@@ -387,7 +387,6 @@ export default {
       total: 0,
       listLoading: true,
       editingProduct: null,
-      salesTypes:[],
       productTypes: [],
       productSubTypes: [],
       selectedProducts: [],
@@ -491,7 +490,6 @@ export default {
       vm.getAllSales()
       vm.getSalesCount()
       vm.getProductTypes()
-      vm.getSalesTypes()
       vm.getSalesChannels()
       vm.getEvents()
       next();
@@ -542,12 +540,6 @@ export default {
             type: 'error'
           })
           this.listLoading = false
-        })
-    },
-    getSalesTypes() {
-      SalesAPI.getAllSalesType()
-        .then(response => {
-          this.salesTypes = response
         })
     },
     getSalesCount() {

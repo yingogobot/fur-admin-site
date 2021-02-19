@@ -120,11 +120,11 @@
           <span>{{ row.order_total_price }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="手工改价" width="100px" align="center">
+      <!-- <el-table-column label="手工改价" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.manual_discount }}</span>
         </template>
-      </el-table-column>
+      </el-table-column> -->
       <el-table-column label="订单实收总价" width="100px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.order_total_revenue }}</span>
@@ -156,9 +156,9 @@
         </template>
       </el-table-column>
       <el-table-column v-if="role === 7 || role === 1" label="审核订单" width="300px" align="center">
-        <template slot-scope="scope">
-          <el-button v-if="scope.row.fully_paid === 0" type="warning" plain @click="updateSalesPaidStuats(scope.row)">确认收款</el-button>
-          <el-button type="info" plain @click="updateDeliveryCode(scope.row)">发货</el-button>
+        <template slot-scope="{row}">
+          <el-button v-if="row.fully_paid === 0" type="warning" plain @click="updateSalesPaidStuats(row)">确认收款</el-button>
+          <el-button type="primary" plain @click="updateDeliveryCode(row)">发货</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -324,41 +324,6 @@ export default {
         .then(response => {
           this.resalers = response
         })
-    },
-    readProductInfo(item) {
-      this.products.forEach(p => {
-        if (p.id === item.product.id) {
-          item.product_id = p.id;
-          item.size = p.size;
-          item.cost = p.cost;
-          item.price = p.price;
-        }
-      })
-    },
-    calculateTotalPrice(item) {
-      item.total_price = roundToTwo((item.price - parseFloat(item.discount)) * parseFloat(item.discount_rate) * item.quantity)
-      item.total_cost = roundToTwo(item.cost * item.quantity)
-      item.total_profit = roundToTwo(item.total_price - item.total_cost)
-      this.calculateOrderPrice()
-    },
-    calculateOrderPrice() {
-      let total = 0
-      let total_product_cost = 0
-      // if (this.temp.products && this.temp.products.length > 0) {
-        this.temp.products.forEach(p => {
-          total = total + p.total_price;
-          total_product_cost = total_product_cost + p.total_cost
-        })
-      // }
-      // if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
-        this.temp.selectedProducts.forEach(p => {
-          total = total + p.total_price;
-          total_product_cost = total_product_cost + p.total_cost
-        })
-      // }
-      this.temp.order_total_price = roundToTwo( parseFloat(total) * parseFloat(this.temp.discount) + parseFloat(this.temp.shipping_cost) - parseFloat(this.temp.coupon) - parseFloat(this.temp.manual_discount));
-      this.temp.order_total_profit = roundToTwo(parseFloat(this.temp.order_total_price) - parseFloat(total_product_cost) - parseFloat(this.temp.shipping_cost) - parseFloat(this.temp.other_cost));
-
     },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex < 10 || (columnIndex >= 15 && columnIndex <= 23)) {

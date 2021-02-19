@@ -10,37 +10,35 @@
 
       <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('shoppings')">
-          <div class="card-panel-text"> 本月销售目标 </div>
-          <div class="card-panel-num">
-            <count-to :start-val="0" :end-val="0" :duration="3600" class="card-panel-num" />
+          <div class="card-panel-text"> 本月库存盘点状态 </div>
+          <div class="card-panel-small">
+           （功能尚未开放）
           </div>
         </div>
       </el-col>
-
-      <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
-        <div class="card-panel" @click="handleSetLineChartData('messages')">
-          <div class="card-panel-text"> 本月总销量 </div>
-          <div class="card-panel-num">
-            <count-to :start-val="0" :end-val="0" :duration="3000" class="card-panel-num" />
-          </div>
-        </div>
-      </el-col>
-
       <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('purchases')">
           <div class="card-panel-text"> 新建订单 </div>
           <div class="card-panel-button">
-            <el-button type="primary" plain @click="handleCreate">新建分销订单</el-button>
-            <!-- <el-button type="warning" plain @click="">直销订单</el-button> -->
+            <el-button v-if="canCreateSalesOrder()" type="primary" plain @click="handleCreateSalesOrder">新建分销订单</el-button>
+            <el-button v-if="canCreateMarketingOrder()" type="warning" plain @click="handleCreateMarketingOrder">新建市场推广订单</el-button>
           </div>
         </div>
       </el-col>
 
       <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
-        <div class="card-panel" @click="goToSalesInReviewPage('shoppings')">
-          <div class="card-panel-text"> 尚未审核的订单 </div>
+        <div v-if="canCreateSalesOrder()" class="card-panel" @click="goToSalesInReviewPage()">
+          <div class="card-panel-text"> 未审核<span style="color:red">销售订单</span> </div>
           <div class="card-panel-num">
             <count-to :start-val="0" :end-val="this.inReivewSalesCount" :duration="1200" class="card-panel-num" />
+          </div>
+        </div>
+      </el-col>
+      <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
+        <div v-if="canCreateSalesOrder()" class="card-panel" @click="goToMarketingOrderInReviewPage()">
+          <div class="card-panel-text"> 未审核<span style="color:blue">推广订单</span> </div>
+          <div class="card-panel-num">
+            <count-to :start-val="0" :end-val="this.inReivewMarketingOrderCount" :duration="1200" class="card-panel-num" />
           </div>
         </div>
       </el-col>
@@ -159,10 +157,10 @@
               <div> 产品折扣为0-1，例如：9折，则填写0.9</div>
             </el-form-item>
           </div>
-          <div style="width: 150px; margin-bottom: 20px;">
+          <!-- <div style="width: 150px; margin-bottom: 20px;">
             <h3 class="middle-title"> 订单人工改价 </h3>
             <el-input v-model="temp.manual_discount" placeholder="人工改价" class="filter-item" clearable @change="calculateOrderPrice()" />
-          </div>
+          </div> -->
           <div style=" margin-bottom: 20px; ">
             <h3 class="section-title"> 汇总信息 </h3>
             <div style="display: inline-block; width: 150px;">
@@ -186,11 +184,11 @@
                   <el-option v-for="item in paymentCompany" :key="item.id" :label="item.title" :value="item" />
                 </el-select>
             </div>
-            <div style="display: inline-block; margin-left: 20px">
+            <div v-if="temp.payment_company" style="display: inline-block; margin-left: 20px">
               <h3 class="section-title"> 支付方式 </h3>
               <el-select v-model="temp.payment_channel" value-key="id" class="filter-item" 
                   placeholder="支付方式" clearable style="width: 300px;">
-                  <el-option v-for="item in paymentChannel" :key="item.id" :label="item.title" :value="item" />
+                  <el-option v-for="item in temp.payment_company.paymentChannel" :key="item.id" :label="item.title" :value="item" />
                 </el-select>
             </div>
           </div>
@@ -224,6 +222,110 @@
         </el-button>
       </div>
     </el-dialog>
+    <el-dialog title="添加新市场订单" :visible.sync="marketingOrderDialogFormVisible" width="80%">
+      <el-form ref="dataForm"
+        :model="marketingOrderTemp" 
+        label-position="left" 
+        label-width="10px" 
+        v-loading="listLoading"
+        style="margin-left:20px;">
+        <div style="display: inline-block;">
+          <div style="display: inline-block; margin-bottom: 40px;">
+            <h3 style="display: inline-block;"> 客户姓名 </h3>
+            <el-input placeholder="客户姓名" v-model="marketingOrderTemp.client_name" class="filter-item inventory-in-input-extra" />
+          </div>
+          <div style="display: inline-block; margin-left: 15px;">
+            <h3 style="display: inline-block;"> 寄送地址 </h3>
+            <el-input placeholder="寄送地址" v-model="marketingOrderTemp.shipping_address" class="filter-item inventory-in-input-line" />
+          </div>
+          <div style="display: inline-block; margin-left: 15px;">
+            <h3 style="display: inline-block;"> 联系电话 </h3>
+            <el-input placeholder="联系电话" v-model="marketingOrderTemp.contact" class="filter-item inventory-in-input-extra" />
+          </div>
+        </div>
+        <div>
+          <div style="display: inline-block; margin-bottom: 40px;">
+            <h3 style="display: inline-block;"> 申请部门 </h3>
+            <el-select v-model="marketingOrderTemp.department" value-key="id" class="filter-item" 
+                placeholder="申请部门" clearable style="width: 150px; margin-left:20px;">
+                <el-option v-for="item in this.departments" :key="item.id" :label="item.name" :value="item" />
+              </el-select>
+          </div>
+          <div style="display: inline-block; margin-left: 20px; margin-bottom: 40px;">
+            <h3 style="display: inline-block;"> 申请人 </h3>
+            <el-input placeholder="申请人" v-model="this.name" :disabled="true" class="filter-item inventory-in-input-extra" />
+          </div>
+        </div>
+        <div>
+          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加产品 </h3>
+          <div style="display: inline-block;">
+            <div style=" margin-bottom: 5px;">
+              <div class="input-title input-title-extra-long">产品类型</div>
+              <div class="input-title input-title-extra-long">产品分类</div>
+              <div class="input-title input-title-extra-long">产品名称</div>
+              <div class="input-title input-title-short">剩余库存</div>
+              <div class="input-title input-title-short">数量</div>
+              <div class="input-title input-title-extra-long">备注</div>
+            </div>
+            <el-form-item v-for="(p, index) in marketingOrderTemp.products" 
+              label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
+              <el-select v-model="p.product_type" value-key="id" placeholder="产品类型" 
+                clearable style="width: 150px;" class="filter-item" 
+                @change="getSubType(p)"
+                @clear="getSubType(p)">
+                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item" />
+              </el-select>
+              <el-select v-if="marketingOrderTemp.products[index].product_type" v-model="p.product_sub_type" value-key="id" class="filter-item inventory-in-input-extra" 
+                placeholder="产品分类" clearable 
+                @change="getProductBySubType(p.product_sub_type, p)" 
+                @clear="getProductBySubType(p.product_sub_type, p)">
+                <el-option  v-for="item in marketingOrderTemp.products[index].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
+              </el-select>
+              <el-select v-if="marketingOrderTemp.products[index].product_sub_type" v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
+                placeholder="产品名称" clearable 
+                @change="readProductInfo(p)"
+                @clear="readProductInfo(p)">
+                <el-option v-for="item in marketingOrderTemp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
+              </el-select>
+              <el-input v-model="p.in_storage_quantity" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
+              <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short"  />
+              <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
+              <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
+            </el-form-item>
+            <el-form-item>
+              <el-button style="width: 150px;" type="primary" plain @click="addMoreMarketingOrderProduct">添加产品</el-button>
+            </el-form-item>
+          </div>
+          <div style=" margin-bottom: 20px; ">
+            <h3 class="section-title"> 订单日期 </h3>
+            <el-date-picker
+              v-model="marketingOrderTemp.date"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              :picker-options="pickerOptions">
+            </el-date-picker>
+          </div>
+          <div>
+            <h3 class="section-title"> 备注 </h3>
+            <el-input
+              type="textarea"
+              :autosize="{ minRows: 2, maxRows: 4}"
+              placeholder="备注"
+              v-model="temp.note"
+              style="width: 70%" />
+          </div>
+        </div>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" :loading="listLoading" @click="addMarketingOrder()">
+          提交新的市场订单
+        </el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -232,7 +334,9 @@ import CountTo from 'vue-count-to'
 import SalesAPI from '@/api/sales.js'
 import ProductAPI from '@/api/product'
 import ResalerAPI from '@/api/resaler'
-import InventoryAPI from '@/api/inventory' 
+import InventoryAPI from '@/api/inventory'
+import OrderAPI from '@/api/order'
+
 import { roundToTwo, roundToOneDecimal } from '@/utils'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
@@ -244,6 +348,7 @@ export default {
   data() {
     return {
       inReivewSalesCount: 0,
+      inReivewMarketingOrderCount: 0,
       listQuery: {
         page: 1,
         limit: 10,
@@ -257,6 +362,7 @@ export default {
       resalerAreas: [],
       resalers: [],
       dialogFormVisible: false,
+      marketingOrderDialogFormVisible: false,
       temp: {
         id: undefined, //this should only exist when editing
         region: undefined,
@@ -271,28 +377,30 @@ export default {
         date: undefined,
         manual_discount: 0
       },
-      paymentChannel: [
-        {
-          id: 1,
-          title: '对公转账'
-        },
-        {
-          id: 2,
-          title: '支付宝'
-        },
-        {
-          id: 3,
-          title: '微信转账'
-        }
-      ],
       paymentCompany: [
         {
           id: 1,
-          title: '上海毗邻星宠物用品有限公司（一般纳税人，需要发票）'
+          title: '上海毗邻星（需要发票，仅限对公转账）',
+          paymentChannel: [
+            {
+              id: 1,
+              title: '对公转账'
+            }
+          ],
         },
         {
           id: 2,
-          title: '上海毛星球宠物食品有限公司（普通纳税人，不要发票）'
+          title: '上海毛星球（不要发票，可对公转账或支付宝）',
+          paymentChannel: [
+            {
+              id: 1,
+              title: '对公转账'
+            },
+            {
+              id: 2,
+              title: '支付宝'
+            }
+          ],
         }
       ],
       pickerOptions: {
@@ -320,31 +428,93 @@ export default {
           }
         }]
       },
+      marketingOrderTemp: {
+        id: undefined, //this should only exist when editing
+        department: undefined,
+        client_name: undefined,
+        shipping_address: undefined,
+        contact: undefined,
+        products: [
+        ],
+        note: undefined,
+        date: undefined,
+      },
+      departments: [
+        {
+          id: 1,
+          name: '运营部'
+        },
+        {
+          id: 2,
+          name: '市场部'
+        },
+        {
+          id: 3,
+          name: '销售部'
+        },
+        {
+          id: 4,
+          name: '设计部'
+        },
+        {
+          id: 5,
+          name: '产品部'
+        }
+      ]
     }
   },
   computed: {
     ...mapGetters([
-      'id'
+      'id',
+      'role',
+      'name'
     ])
   },
   created() {
     this.getInReivewSalesCount()
+    this.getInReivewMarketingOrderCount()
     this.getProductTypes()
     this.getRegions()
     this.getAllInventorys()
     this.temp.date = new Date()
+    this.marketingOrderTemp.date = new Date()
   },
   methods: {
+    canCreateSalesOrder() {
+      if (this.role === 1 || this.role === 2 || this.role === 4 || this.role === 5 || this.role === 6 || this.role === 7) {
+        return true
+      } else {
+        return false
+      }
+    },
+    canCreateMarketingOrder() {
+      if (this.role === 1 || this.role === 2 || this.role === 4 || 
+          this.role === 5 || this.role === 6 || this.role === 7 || 
+          this.role === 8 || this.role === 9 || this.role === 10) {
+        return true
+      } else {
+        return false
+      }
+    },
     handleSetLineChartData(type) {
       this.$emit('handleSetLineChartData', type)
     },
     goToSalesInReviewPage() {
       this.$router.push({ path: 'sales/in-review-sales-order' })
     },
+    goToMarketingOrderInReviewPage() {
+      this.$router.push({ path: 'sales/in-review-marketing-order' })
+    },
     getInReivewSalesCount() {
       SalesAPI.getAllInReviewSalesCount(this.listQuery)
         .then(response => {
           this.inReivewSalesCount = response.total
+        })
+    },
+    getInReivewMarketingOrderCount() {
+      OrderAPI.getMarketingOrderInReviewCount()
+        .then(response => {
+          this.inReivewMarketingOrderCount = response.total
         })
     },
     getAllInventorys() {
@@ -355,8 +525,14 @@ export default {
         .catch(err => {
         })
     },
-    handleCreate() {
+    handleCreateSalesOrder() {
       this.dialogFormVisible = true
+      this.$nextTick(() => {
+        this.$refs['dataForm'].clearValidate()
+      })
+    },
+    handleCreateMarketingOrder() {
+      this.marketingOrderDialogFormVisible = true
       this.$nextTick(() => {
         this.$refs['dataForm'].clearValidate()
       })
@@ -469,6 +645,17 @@ export default {
         total_price: 0
       });
     },
+    addMoreMarketingOrderProduct() {
+      this.marketingOrderTemp.products.push({
+        product_type: undefined,
+        product_sub_type: undefined,
+        product_id: '',
+        quantity: 0,
+        cost: undefined,
+        note: undefined,
+        key: this.marketingOrderTemp.products.length + 1
+      });
+    },
     removeProduct(itemIndex) {
       this.$delete(this.temp.products, itemIndex)
       this.calculateOrderPrice()
@@ -544,7 +731,7 @@ export default {
       //     }
       //   });
       // } else {
-        item.total_price = roundToOneDecimal((item.price) * parseFloat(item.discount_rate)) * item.quantity
+        item.total_price = roundToTwo(roundToTwo((item.price) * parseFloat(item.discount_rate)) * item.quantity)
         item.total_cost = roundToTwo(item.cost * (parseFloat(item.quantity) + parseFloat(item.promotion_quantity)))
         item.total_profit = roundToTwo(item.total_price - item.total_cost)
         this.calculateOrderPrice()
@@ -664,6 +851,93 @@ export default {
           }
       }
     },
+    sendAddMarketingOrderRequest() {
+      let that = this
+      if (!this.marketingOrderTemp.client_name) {
+        this.$message({
+          message: '请填写具体客户姓名',
+          type: 'error'
+        })
+      } else if (!this.marketingOrderTemp.shipping_address) {
+        this.$message({
+          message: '请填写具体的收货地址',
+          type: 'error'
+        })
+      } else if (!this.marketingOrderTemp.contact) {
+        this.$message({
+          message: '请填写具体的联系方式',
+          type: 'error'
+        })
+      } else {
+        let failCheck = false
+        this.marketingOrderTemp.products.forEach(p => {
+          if (parseFloat(p.quantity) + parseFloat(p.promotion_quantity) === 0) {
+            failCheck = true
+          }
+        })
+
+        if (failCheck) {
+          this.$message({
+            message: '有一款或多款产品出库总数为0，请仔细检查',
+            type: 'error'
+          })
+        } else {
+          let data = {
+            marketing_order_data: {
+              department: this.marketingOrderTemp.department.name,
+              client_name: this.marketingOrderTemp.client_name,
+              shipping_address: this.marketingOrderTemp.shipping_address,
+              contact: this.marketingOrderTemp.contact,
+              added_by: this.id,
+              date: moment(this.marketingOrderTemp.date).format('YYYY-MM-DD'),
+              note: this.marketingOrderTemp.note
+            },
+            product_data: [],
+          }
+          this.marketingOrderTemp.products.forEach(p => {
+            let d = {
+              product_id: p.product_id,
+              quantity: p.quantity,
+              per_item_cost_atm: p.cost,
+              note: p.note,
+            }
+            data.product_data.push(d)
+          })
+
+          this.listLoading = true
+          OrderAPI.addMarketingOrder(data)
+            .then(response => {
+              this.listLoading = false
+              this.$alert('下单成功', '成功', {
+                confirmButtonText: '确定',
+                callback: action => {
+                  this.marketingOrderDialogFormVisible = false
+                  this.getInReivewMarketingOrderCount()
+                  this.setDataBackToDefault()
+                }
+              });
+            })
+            .catch(err => {
+              that.$message({
+                message: '下单失败，请联系徐神检查',
+                type: 'error'
+              })
+              this.listLoading = false
+            })
+          }
+      }
+    },
+    addMarketingOrder() {
+      this.$confirm('确定添加这个订单?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.sendAddMarketingOrderRequest()
+      }).catch((err) => {  
+        console.log(err)
+      });
+    },
     setDataBackToDefault() {
       this.temp = {
         id: undefined, //this should only exist when editing
@@ -677,6 +951,17 @@ export default {
         resaler: undefined,
         note: undefined,
         manual_discount: 0,
+        date: new Date()
+      }
+      this.marketingOrderTemp = {
+        id: undefined, //this should only exist when editing
+        department: undefined,
+        client_name: undefined,
+        shipping_address: undefined,
+        contact: undefined,
+        products: [
+        ],
+        note: undefined,
         date: new Date()
       }
     }
@@ -715,6 +1000,12 @@ export default {
     .card-panel-num {
       text-align: center;
       font-size: 30px;
+      line-height: 50px;
+    }
+
+    .card-panel-small {
+      text-align: center;
+      font-size: 20px;
       line-height: 50px;
     }
 
@@ -774,6 +1065,7 @@ export default {
 }
 .inventory-in-input-line {
   width: 250px; 
+  margin-left: 10px;
 }
 
 @media (max-width:550px) {

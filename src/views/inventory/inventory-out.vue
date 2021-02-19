@@ -441,6 +441,8 @@ export default {
         id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
       } else if (subType === 5) { //猫用鲜粮
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
+      } else if (subType === 6) { //猫条
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_SIP
       }
       ProductAPI.getAllProductsBySubType(id)
         .then(response => {

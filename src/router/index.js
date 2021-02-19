@@ -13,6 +13,7 @@ import resalerRouter from './modules/resaler'
 import reportRouter from './modules/report'
 import inventoryRouter from './modules/inventory'
 import memberSalesDetail from '@/views/member/member-sales-detail'
+import User from '@/store/modules/user'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -93,7 +94,7 @@ export const constantRoutes = [
   memberRouter,
   productRouter,
   dataRouter,
-  // reportRouter,
+  reportRouter,
   { path: '*', redirect: '/404', hidden: true }
 ]
 
@@ -110,5 +111,21 @@ export function resetRouter() {
   const newRouter = createRouter()
   router.matcher = newRouter.matcher // reset router
 }
+
+router.beforeEach((to, from, next) => {
+  // redirect to login page if not logged in and trying to access a restricted page
+  
+  console.log(to.meta)
+  if (to.meta.role) {
+    console.log('to.meta' + to.meta.role)
+  }
+  // const { role } = to.meta.role;
+  const currentRole = User.role;
+
+  console.log('current user role is = ==== ' + currentRole)
+  // console.log('meta role is = ==== ' + role)
+
+  next();
+})
 
 export default router

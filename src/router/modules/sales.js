@@ -8,7 +8,7 @@ const inventoryRouter = {
   redirect: '/sales/sales-order',
   name: 'Sales',
   meta: {
-    title: '销售订单',
+    title: '订单',
     icon: 'table'
   },
   children: [
@@ -16,7 +16,7 @@ const inventoryRouter = {
       path: 'sales-order',
       component: () => import('@/views/sales/sales-order'),
       name: 'Histroy Sales Order',
-      meta: { title: '历史销售记录(即将删除)' }
+      meta: { title: '历史销售记录(即将删除)', role: [1] }
     },
     {
       path: 'direct-sales-order',
@@ -31,10 +31,22 @@ const inventoryRouter = {
       meta: { title: '分销订单记录' }
     },
     {
+      path: 'marketing-order',
+      component: () => import('@/views/sales/marketing-order'),
+      name: 'Marketing Order',
+      meta: { title: '市场订单记录' }
+    },
+    {
       path: 'in-review-sales-order',
       component: () => import('@/views/sales/in-review-order'),
       name: 'In Review Sales Order',
-      meta: { title: '需审核订单列表' }
+      meta: { title: '需审核销售订单列表' }
+    },
+    {
+      path: 'in-review-marketing-order',
+      component: () => import('@/views/sales/in-review-marketing-order'),
+      name: 'In Review Marketing Order',
+      meta: { title: '需审核市场订单列表' }
     }
   ]
 }

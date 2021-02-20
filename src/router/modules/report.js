@@ -15,13 +15,13 @@ const reportRouter = {
     {
       path: 'general-sales-report',
       component: () => import('@/views/report/general-sales-report'),
-      name: 'Histroy Sales Order',
+      name: 'Monthly Sales Report',
       meta: { title: '月销售金额统计' }
     },
     {
       path: 'detail-sales-report',
       component: () => import('@/views/report/detail-sales-report'),
-      name: 'Direct Sales Order',
+      name: 'Detail Sales Report',
       meta: { title: '销售详细报告' }
     }
   ]

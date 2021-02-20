@@ -43,5 +43,12 @@ export default {
         .then((results) => resolve())
         .catch((err) => reject(err))
     })
-  }
+  },
+  addBulkMarketingOrder(data) {
+    return new Promise((resolve, reject) => {
+      $.post('order/bulk_add', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
 }

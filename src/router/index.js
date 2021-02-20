@@ -112,20 +112,20 @@ export function resetRouter() {
   router.matcher = newRouter.matcher // reset router
 }
 
-router.beforeEach((to, from, next) => {
-  // redirect to login page if not logged in and trying to access a restricted page
+// router.beforeEach((to, from, next) => {
+//   // redirect to login page if not logged in and trying to access a restricted page
   
-  console.log(to.meta)
-  if (to.meta.role) {
-    console.log('to.meta' + to.meta.role)
-  }
-  // const { role } = to.meta.role;
-  const currentRole = User.role;
+//   console.log(to.meta)
+//   if (to.meta.role) {
+//     console.log('to.meta' + to.meta.role)
+//   }
+//   // const { role } = to.meta.role;
+//   const currentRole = User.role;
 
-  console.log('current user role is = ==== ' + currentRole)
-  // console.log('meta role is = ==== ' + role)
+//   console.log('current user role is = ==== ' + currentRole)
+//   // console.log('meta role is = ==== ' + role)
 
-  next();
-})
+//   next();
+// })
 
 export default router

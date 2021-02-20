@@ -214,7 +214,7 @@
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
+        <el-button @click="dismissAddOrderDialog()">
           取消
         </el-button>
         <el-button type="primary" :loading="listLoading" @click="addSalesOrder()">
@@ -229,96 +229,121 @@
         label-width="10px" 
         v-loading="listLoading"
         style="margin-left:20px;">
-        <div style="display: inline-block;">
-          <div style="display: inline-block; margin-bottom: 40px;">
-            <h3 style="display: inline-block;"> 客户姓名 </h3>
-            <el-input placeholder="客户姓名" v-model="marketingOrderTemp.client_name" class="filter-item inventory-in-input-extra" />
-          </div>
-          <div style="display: inline-block; margin-left: 15px;">
-            <h3 style="display: inline-block;"> 寄送地址 </h3>
-            <el-input placeholder="寄送地址" v-model="marketingOrderTemp.shipping_address" class="filter-item inventory-in-input-line" />
-          </div>
-          <div style="display: inline-block; margin-left: 15px;">
-            <h3 style="display: inline-block;"> 联系电话 </h3>
-            <el-input placeholder="联系电话" v-model="marketingOrderTemp.contact" class="filter-item inventory-in-input-extra" />
-          </div>
-        </div>
         <div>
-          <div style="display: inline-block; margin-bottom: 40px;">
+          <div style="display: inline-block; margin-bottom: 20px;">
             <h3 style="display: inline-block;"> 申请部门 </h3>
             <el-select v-model="marketingOrderTemp.department" value-key="id" class="filter-item" 
                 placeholder="申请部门" clearable style="width: 150px; margin-left:20px;">
                 <el-option v-for="item in this.departments" :key="item.id" :label="item.name" :value="item" />
               </el-select>
           </div>
-          <div style="display: inline-block; margin-left: 20px; margin-bottom: 40px;">
+          <div style="display: inline-block; margin-left: 20px;">
             <h3 style="display: inline-block;"> 申请人 </h3>
             <el-input placeholder="申请人" v-model="this.name" :disabled="true" class="filter-item inventory-in-input-extra" />
           </div>
         </div>
-        <div>
-          <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加产品 </h3>
-          <div style="display: inline-block;">
-            <div style=" margin-bottom: 5px;">
-              <div class="input-title input-title-extra-long">产品类型</div>
-              <div class="input-title input-title-extra-long">产品分类</div>
-              <div class="input-title input-title-extra-long">产品名称</div>
-              <div class="input-title input-title-short">剩余库存</div>
-              <div class="input-title input-title-short">数量</div>
-              <div class="input-title input-title-extra-long">备注</div>
-            </div>
-            <el-form-item v-for="(p, index) in marketingOrderTemp.products" 
-              label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
-              <el-select v-model="p.product_type" value-key="id" placeholder="产品类型" 
-                clearable style="width: 150px;" class="filter-item" 
-                @change="getSubType(p)"
-                @clear="getSubType(p)">
-                <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item" />
-              </el-select>
-              <el-select v-if="marketingOrderTemp.products[index].product_type" v-model="p.product_sub_type" value-key="id" class="filter-item inventory-in-input-extra" 
-                placeholder="产品分类" clearable 
-                @change="getProductBySubType(p.product_sub_type, p)" 
-                @clear="getProductBySubType(p.product_sub_type, p)">
-                <el-option  v-for="item in marketingOrderTemp.products[index].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
-              </el-select>
-              <el-select v-if="marketingOrderTemp.products[index].product_sub_type" v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
-                placeholder="产品名称" clearable 
-                @change="readProductInfo(p)"
-                @clear="readProductInfo(p)">
-                <el-option v-for="item in marketingOrderTemp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
-              </el-select>
-              <el-input v-model="p.in_storage_quantity" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
-              <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short"  />
-              <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
-              <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
-            </el-form-item>
-            <el-form-item>
-              <el-button style="width: 150px;" type="primary" plain @click="addMoreMarketingOrderProduct">添加产品</el-button>
-            </el-form-item>
-          </div>
-          <div style=" margin-bottom: 20px; ">
-            <h3 class="section-title"> 订单日期 </h3>
-            <el-date-picker
-              v-model="marketingOrderTemp.date"
-              align="right"
-              type="date"
-              placeholder="选择日期"
-              :picker-options="pickerOptions">
-            </el-date-picker>
+        <div style="display: inline-block; margin-bottom: 40px;">
+          <el-radio v-model="uploadType" label="1">单个上传</el-radio>
+          <el-radio v-model="uploadType" label="2">批量上传</el-radio>
+        </div>
+        <div v-if="uploadType=== '2'">
+          <div style="display: block;  margin-left: 20px; margin-bottom: 40px;">
+            <h3 style="display: inline-block;"> 批量上传Excel </h3>
+            <input type="file" @change="onReadExcelFileChange" ref="fileInput"/>
+            <el-button @click="clearExcelFileInput()">
+              清除文件
+            </el-button>
           </div>
           <div>
-            <h3 class="section-title"> 备注 </h3>
-            <el-input
-              type="textarea"
-              :autosize="{ minRows: 2, maxRows: 4}"
-              placeholder="备注"
-              v-model="temp.note"
-              style="width: 70%" />
+             <el-table :data="bulkInputData" border :span-method="objectSpanMethod" height="250" style="width: 100%">
+              <el-table-column prop="name" label="客户姓名" width="180" />
+              <el-table-column prop="address" label="客户地址" width="180"/>
+              <el-table-column prop="contact" label="联系方式" />
+              <el-table-column prop="product_name" label="产品名称" width="180" />
+              <el-table-column prop="quantity" label="产品数量" width="180"/>
+              <el-table-column prop="note" label="备注" />
+            </el-table>
+          </div>
+        </div>
+        <div v-if="uploadType=== '1'">
+          <div style="display: inline-block; margin-bottom: 40px;">
+            <div style="display: inline-block;">
+              <h3 style="display: inline-block;"> 客户姓名 </h3>
+              <el-input placeholder="客户姓名" v-model="marketingOrderTemp.client_name" class="filter-item inventory-in-input-extra" />
+            </div>
+            <div style="display: inline-block; margin-left: 15px;">
+              <h3 style="display: inline-block;"> 寄送地址 </h3>
+              <el-input placeholder="寄送地址" v-model="marketingOrderTemp.shipping_address" class="filter-item inventory-in-input-line" />
+            </div>
+            <div style="display: inline-block; margin-left: 15px;">
+              <h3 style="display: inline-block;"> 联系电话 </h3>
+              <el-input placeholder="联系电话" v-model="marketingOrderTemp.contact" class="filter-item inventory-in-input-extra" />
+            </div>
+          </div>
+          <div>
+            <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加产品 </h3>
+            <div style="display: inline-block;">
+              <div style=" margin-bottom: 5px;">
+                <div class="input-title input-title-extra-long">产品类型</div>
+                <div class="input-title input-title-extra-long">产品分类</div>
+                <div class="input-title input-title-extra-long">产品名称</div>
+                <div class="input-title input-title-short">剩余库存</div>
+                <div class="input-title input-title-short">数量</div>
+                <div class="input-title input-title-extra-long">备注</div>
+              </div>
+              <el-form-item v-for="(p, index) in marketingOrderTemp.products" 
+                label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
+                <el-select v-model="p.product_type" value-key="id" placeholder="产品类型" 
+                  clearable style="width: 150px;" class="filter-item" 
+                  @change="getSubType(p)"
+                  @clear="getSubType(p)">
+                  <el-option v-for="item in productTypes" :key="item.id" :label="item.title" :value="item" />
+                </el-select>
+                <el-select v-if="marketingOrderTemp.products[index].product_type" v-model="p.product_sub_type" value-key="id" class="filter-item inventory-in-input-extra" 
+                  placeholder="产品分类" clearable 
+                  @change="getProductBySubType(p.product_sub_type, p)" 
+                  @clear="getProductBySubType(p.product_sub_type, p)">
+                  <el-option  v-for="item in marketingOrderTemp.products[index].product_type.sub_type" :key="item.id" :label="item.title" :value="item" />
+                </el-select>
+                <el-select v-if="marketingOrderTemp.products[index].product_sub_type" v-model="p.product" value-key="id" class="filter-item inventory-in-input-extra" 
+                  placeholder="产品名称" clearable 
+                  @change="readProductInfo(p)"
+                  @clear="readProductInfo(p)">
+                  <el-option v-for="item in marketingOrderTemp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
+                </el-select>
+                <el-input v-model="p.in_storage_quantity" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
+                <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short"  />
+                <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
+                <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
+              </el-form-item>
+              <el-form-item>
+                <el-button style="width: 150px;" type="primary" plain @click="addMoreMarketingOrderProduct">添加产品</el-button>
+              </el-form-item>
+            </div>
+            <div style=" margin-bottom: 20px; ">
+              <h3 class="section-title"> 订单日期 </h3>
+              <el-date-picker
+                v-model="marketingOrderTemp.date"
+                align="right"
+                type="date"
+                placeholder="选择日期"
+                :picker-options="pickerOptions">
+              </el-date-picker>
+            </div>
+            <div>
+              <h3 class="section-title"> 备注 </h3>
+              <el-input
+                type="textarea"
+                :autosize="{ minRows: 2, maxRows: 4}"
+                placeholder="备注"
+                v-model="temp.note"
+                style="width: 70%" />
+            </div>
           </div>
         </div>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">
+        <el-button @click="dismissAddOrderDialog()">
           取消
         </el-button>
         <el-button type="primary" :loading="listLoading" @click="addMarketingOrder()">
@@ -330,6 +355,7 @@
 </template>
 
 <script>
+import readXlsxFile from 'read-excel-file'
 import CountTo from 'vue-count-to'
 import SalesAPI from '@/api/sales.js'
 import ProductAPI from '@/api/product'
@@ -354,6 +380,9 @@ export default {
         limit: 10,
       },
       listLoading: false,
+      bulkInputData: [],
+      rowSpans: null,
+      uploadType: "1",
       productTypes: [],
       productSubTypes: [],
       selectedProducts: [],
@@ -748,6 +777,12 @@ export default {
       this.temp.order_total_revenue = roundToTwo(parseFloat(total) - parseFloat(this.temp.manual_discount));
       this.temp.order_total_profit = roundToTwo(parseFloat(this.temp.order_total_price) - parseFloat(total_product_cost));
     },
+    dismissAddOrderDialog() {
+      this.dialogFormVisible = false
+      this.marketingOrderDialogFormVisible = false
+      this.$refs.fileInput.value = null
+      this.setDataBackToDefault()
+    },
     addSalesOrder() {
       this.$confirm('确定添加?', '提示', {
         confirmButtonText: '确定',
@@ -868,6 +903,11 @@ export default {
           message: '请填写具体的联系方式',
           type: 'error'
         })
+      } else if (!this.marketingOrderTemp.department) {
+        this.$message({
+          message: '请填写具体申请部门',
+          type: 'error'
+        })
       } else {
         let failCheck = false
         this.marketingOrderTemp.products.forEach(p => {
@@ -933,7 +973,11 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.sendAddMarketingOrderRequest()
+        if (this.uploadType === "1") {
+          this.sendAddMarketingOrderRequest()
+        } else {
+          this.sendBulkInputDataRequest()
+        }
       }).catch((err) => {  
         console.log(err)
       });
@@ -964,7 +1008,169 @@ export default {
         note: undefined,
         date: new Date()
       }
-    }
+      this.bulkInputData = []
+    },
+    onReadExcelFileChange(event) {
+      console.log(event)
+      let xlsxfile = event.target.files ? event.target.files[0] : null;
+      this.bulkInputData = []
+      let allEntries = []
+      readXlsxFile(xlsxfile).then((rows) => {
+        allEntries = []
+        for (let index = 1; index < rows.length; index++) {
+          const row = rows[index];
+          let data = {
+            id: row[0],
+            name: row[1],
+            address: row[2],
+            contact: row[3],
+            product_name: row[6].substring(0, row[6].indexOf('__')),
+            product_id: row[6].substring(row[6].indexOf('__')+2),
+            quantity: row[7],
+            note: row[8],
+          }
+          allEntries.push(data)
+        }
+        if (allEntries.length === 0) {
+          this.$alert('读取文件失败或文件为空', '失败', {
+            confirmButtonText: '确定'
+          });
+        } else {
+          this.bulkInputData = allEntries
+          this.calculateRowSpan()
+          this.$alert('文件读取成功，数据已经导入。请检查后提交', '成功', {
+            confirmButtonText: '确定'
+          });
+          
+        }
+      })
+    },
+    clearExcelFileInput() {
+      this.$refs.fileInput.value = null
+      this.bulkInputData = []
+    },
+    sendBulkInputDataRequest() {
+      if (!this.marketingOrderTemp.department) {
+        this.$message({
+          message: '请填写具体申请部门',
+          type: 'error'
+        })
+      } else {
+        let failCheck = false
+        this.bulkInputData.forEach(p => {
+          if (parseFloat(p.quantity) === 0) {
+            failCheck = true
+          }
+        })
+
+        if (failCheck) {
+          this.$message({
+            message: '有一条或多条产品数量为0，请仔细检查',
+            type: 'error'
+          })
+        } else {
+          let bulkData = []
+          this.bulkInputData.forEach(d => {
+            let found = false
+            let newData = null
+            bulkData.forEach(bd => {
+              if (d.contact === bd.marketing_order_data.contact) {
+                found = true
+                newData = bd
+              }
+            })
+            let pd = {
+              product_id: d.product_id,
+              quantity: d.quantity,
+              note: d.note
+            }
+            if (!found) {
+              newData = {
+                marketing_order_data: {
+                  department: this.marketingOrderTemp.department.name,
+                  client_name: d.name,
+                  shipping_address: d.address,
+                  contact: d.contact,
+                  added_by: this.id
+                },
+                product_data: [pd]
+              }
+              bulkData.push(newData)
+            } else {
+              newData.product_data.push(pd)
+            }
+          })
+          this.listLoading = true
+          console.log(bulkData)
+          OrderAPI.addBulkMarketingOrder(bulkData)
+            .then(response => {
+              this.listLoading = false
+              this.$alert('下单成功', '成功', {
+                confirmButtonText: '确定',
+                callback: action => {
+                  this.marketingOrderDialogFormVisible = false
+                  this.$refs.fileInput.value = null
+                  this.getInReivewMarketingOrderCount()
+                  this.setDataBackToDefault()
+                }
+              });
+            })
+            .catch(err => {
+              that.$message({
+                message: '下单失败，请联系徐神检查',
+                type: 'error'
+              })
+              this.listLoading = false
+            })
+        }
+      }
+    },
+    calculateRowSpan() {
+      let g = []
+      let count = 0
+      this.bulkInputData.forEach(i => {
+        let found = false
+        g.forEach(t => {
+          if (t.id === i.id) {
+            found = true
+            t.end++
+            t.rowSpan++
+            count = t.start + t.rowSpan
+          }
+        })
+
+        if (!found) {
+          let newT = {
+            id: i.id,
+            start: count,
+            end: count+1,
+            rowSpan: 1
+          }
+          count++
+          g.push(newT)
+        }
+      });
+      this.rowSpans = g;
+    },
+    objectSpanMethod({ row, column, rowIndex, columnIndex }) {
+      if (columnIndex < 3) {
+        let data = {
+          rowspan: 0,
+          colspan: 0
+        };
+        this.rowSpans.forEach(i => {
+          if (rowIndex >= i.start && rowIndex < i.end && (rowIndex - i.start) % i.rowSpan === 0) {
+            data = {
+              rowspan: i.rowSpan,
+              colspan: 1
+            };
+            return;
+          }
+        })
+
+        return data;
+      }
+    },
   }
 }
 </script>

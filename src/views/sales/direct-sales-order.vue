@@ -855,7 +855,7 @@ export default {
         })
       } else {
         let data = {
-          sales_data: {
+          order_data: {
             coupon: this.temp.coupon,
             discount: this.temp.discount,
             manual_discount: this.temp.manual_discount,

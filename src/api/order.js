@@ -8,9 +8,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  getMarketingOrderCount() {
+  getMarketingOrderCount(data) {
     return new Promise((resolve, reject) => {
-      $.post('order/get_count')
+      $.post('order/get_count', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
@@ -29,9 +29,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  deleteMarketingOrder(orderId) {
+  deleteMarketingOrder(orderId, inventoryId) {
     return new Promise((resolve, reject) => {
-      let data = {id: orderId}
+      let data = {id: orderId, inventory_id: inventoryId}
       $.post('order/delete', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
@@ -47,6 +47,13 @@ export default {
   addBulkMarketingOrder(data) {
     return new Promise((resolve, reject) => {
       $.post('order/bulk_add', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  updateBulkMarketingOrderDeliveryCode(data) {
+    return new Promise((resolve, reject) => {
+      $.post('order/bulk_deliver', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

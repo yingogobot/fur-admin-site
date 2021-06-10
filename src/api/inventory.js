@@ -30,9 +30,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  getStorage() {
+  getStorage(data) {
     return new Promise((resolve, reject) => {
-      $.post('inventory/storage')
+      $.post('inventory/storage', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

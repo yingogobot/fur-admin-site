@@ -8,15 +8,15 @@
         </div>
       </el-col>
 
-      <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
+      <!-- <el-col :xs="12" :sm="12" :lg="4" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('shoppings')">
           <div class="card-panel-text"> 本月库存盘点状态 </div>
           <div class="card-panel-small">
            （功能尚未开放）
           </div>
         </div>
-      </el-col>
-      <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
+      </el-col> -->
+      <el-col :xs="12" :sm="12" :lg="8" class="card-panel-col">
         <div class="card-panel" @click="handleSetLineChartData('purchases')">
           <div class="card-panel-text"> 新建订单 </div>
           <div class="card-panel-button">
@@ -90,23 +90,29 @@
 
           <div style="margin-bottom: 20px"> 
             作弊工具：
-            <el-button type="info" @click="addAllProductBySubType(1)">
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(1)">
               添加小冻干套装
             </el-button>
-            <el-button type="info" @click="addAllProductBySubType(2)">
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(2)">
               添加大冻干套装
             </el-button>
-            <el-button type="info" @click="addAllProductBySubType(3)">
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(3)">
               添加肉干套装
             </el-button>
-            <el-button type="info" @click="addAllProductBySubType(4)">
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(4)">
               添加狗鲜粮套装
             </el-button>
-            <el-button type="info" @click="addAllProductBySubType(5)">
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(5)">
               添加猫鲜粮套装
             </el-button>
-            <el-button type="info" @click="addAllProductBySubType(6)">
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(6)">
               添加猫条套装
+            </el-button>
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(7)">
+              添加主粮罐套装
+            </el-button>
+            <el-button class="cheat-button" type="info" @click="addAllProductBySubType(8)">
+              添加dundun酱套装
             </el-button>
           </div>
           <div style="display: inline-block;">
@@ -120,7 +126,6 @@
               <div class="input-title input-title-short">赠送数量</div>
               <div class="input-title input-title">产品折扣</div>
               <div class="input-title input-title-extra-long">总价</div>
-              <div class="input-title input-title-extra-long">备注</div>
             </div>
             <el-form-item v-for="(p, index) in temp.products" 
               label="" :key="p.id" prop="product" style="margin-bottom: 10px;">
@@ -143,12 +148,11 @@
                 <el-option v-for="item in temp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
               </el-select>
               <el-input placeholder="零售价" v-model="p.price" :disabled="true" class="filter-item inventory-in-input-short" />
-              <el-input v-model="p.in_storage_quantity" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
-              <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p)" />
-              <el-input v-model="p.promotion_quantity" placeholder="赠送数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p)" />
-              <el-input v-model="p.discount_rate" placeholder="折扣率" class="filter-item inventory-in-input" clearable @change="calculateTotalPrice(p)"  />
+              <el-input v-if="p.in_storage_quantity && p.in_storage_quantity.length > 0" v-model="p.in_storage_quantity[1]" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
+              <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p, 2)" />
+              <el-input v-model="p.promotion_quantity" placeholder="赠送数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p, 2)" />
+              <el-input v-model="p.discount_rate" placeholder="折扣率" class="filter-item inventory-in-input" clearable @change="calculateTotalPrice(p, 2)"  />
               <el-input v-model="p.total_price" placeholder="总价" class="filter-item inventory-in-input-extra" clearable :disabled="true"/>
-              <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
               <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
             </el-form-item>
 
@@ -157,10 +161,6 @@
               <div> 产品折扣为0-1，例如：9折，则填写0.9</div>
             </el-form-item>
           </div>
-          <!-- <div style="width: 150px; margin-bottom: 20px;">
-            <h3 class="middle-title"> 订单人工改价 </h3>
-            <el-input v-model="temp.manual_discount" placeholder="人工改价" class="filter-item" clearable @change="calculateOrderPrice()" />
-          </div> -->
           <div style=" margin-bottom: 20px; ">
             <h3 class="section-title"> 汇总信息 </h3>
             <div style="display: inline-block; width: 150px;">
@@ -282,6 +282,15 @@
           </div>
           <div>
             <h3 style="display: inline-block; width: 100px; vertical-align: top; margin-top: 0;"> 添加产品 </h3>
+            <div style="margin-bottom: 20px"> 
+              作弊工具：
+              <el-button type="info" @click="addSaleTestingProducts(1)">
+                添加销售样品套装
+              </el-button>
+              <el-button type="info" @click="addSaleTestingProducts(2)">
+                添加主粮罐套装
+              </el-button>
+            </div>
             <div style="display: inline-block;">
               <div style=" margin-bottom: 5px;">
                 <div class="input-title input-title-extra-long">产品类型</div>
@@ -311,10 +320,10 @@
                   @clear="readProductInfo(p)">
                   <el-option v-for="item in marketingOrderTemp.products[index].product_sub_type.products" :key="item.id" :label="item.title" :value="item" />
                 </el-select>
-                <el-input v-model="p.in_storage_quantity" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
-                <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short"  />
+                <el-input v-if="p.in_storage_quantity && p.in_storage_quantity.length > 0" v-model="p.in_storage_quantity[0]" placeholder="库存数量" class="filter-item inventory-in-input-short" :disabled="true"/>
+                <el-input v-model="p.quantity" placeholder="销售数量" class="filter-item inventory-in-input-short" @change="calculateTotalPrice(p, 1)" />
                 <el-input v-model="p.note" placeholder="备注" class="filter-item inventory-in-input-extra" clearable/>
-                <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeProduct(index)" />
+                <el-button style="margin-left: 10px;" type="danger" icon="el-icon-delete" @click="removeMarketingOrderProduct(index)" />
               </el-form-item>
               <el-form-item>
                 <el-button style="width: 150px;" type="primary" plain @click="addMoreMarketingOrderProduct">添加产品</el-button>
@@ -336,7 +345,7 @@
                 type="textarea"
                 :autosize="{ minRows: 2, maxRows: 4}"
                 placeholder="备注"
-                v-model="temp.note"
+                v-model="marketingOrderTemp.note"
                 style="width: 70%" />
             </div>
           </div>
@@ -360,10 +369,9 @@ import CountTo from 'vue-count-to'
 import SalesAPI from '@/api/sales.js'
 import ProductAPI from '@/api/product'
 import ResalerAPI from '@/api/resaler'
-import InventoryAPI from '@/api/inventory'
 import OrderAPI from '@/api/order'
 
-import { roundToTwo, roundToOneDecimal } from '@/utils'
+import { roundToTwo, roundToOne } from '@/utils'
 import moment from 'moment'
 import { mapGetters } from 'vuex'
 
@@ -504,7 +512,6 @@ export default {
     this.getInReivewMarketingOrderCount()
     this.getProductTypes()
     this.getRegions()
-    this.getAllInventorys()
     this.temp.date = new Date()
     this.marketingOrderTemp.date = new Date()
   },
@@ -544,14 +551,6 @@ export default {
       OrderAPI.getMarketingOrderInReviewCount()
         .then(response => {
           this.inReivewMarketingOrderCount = response.total
-        })
-    },
-    getAllInventorys() {
-      InventoryAPI.fetchAllInventorys({page: 1, limit: 9999})
-        .then(response => {
-          this.inventories = response.data
-        })
-        .catch(err => {
         })
     },
     handleCreateSalesOrder() {
@@ -659,6 +658,24 @@ export default {
       this.temp.resaler = undefined
       this.resalers = []
     },
+    checkIfQuantityIsEnough(item, storageId) {
+      console.log(item)
+      console.log(storageId)
+       if (parseFloat(item.quantity) + parseFloat(item.promotion_quantity) > parseFloat(item.in_storage_quantity[storageId-1])) {
+        let total_out = parseFloat(item.quantity) + parseFloat(item.promotion_quantity)
+        let str = item.product.title + ' 库存仅为 >' + parseFloat(item.in_storage_quantity[storageId-1]) +'<, 当前选择出库数量总数为 ' + total_out +'，请检查出库数量'
+        this.$alert(str, '失败', {
+          confirmButtonText: '确定',
+          callback: action => {
+          }
+        });
+        item.quantity = 0
+        item.promotion_quantity = 0
+        return false
+      } else {
+        return true
+      }
+    },
     addMoreProduct() {
       this.temp.products.push({
         product_type: undefined,
@@ -689,6 +706,9 @@ export default {
       this.$delete(this.temp.products, itemIndex)
       this.calculateOrderPrice()
     },
+    removeMarketingOrderProduct(itemIndex) {
+      this.$delete(this.marketingOrderTemp.products, itemIndex)
+    },
     addAllProductBySubType(subType) {
       let id = 0
       if (subType === 1) { //小包冻干taobao
@@ -703,6 +723,10 @@ export default {
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
       } else if (subType === 6) { //猫条
         id = process.env.PRODUCT_SUB_TYPE_ID.CAT_SIP
+      } else if (subType === 7) { //主粮罐
+        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FOOD_CAN
+      } else if (subType === 8) { //DunDun酱
+        id = process.env.PRODUCT_SUB_TYPE_ID.DUN_DUN_CREAM
       }
       ProductAPI.getAllProductsBySubType(id)
         .then(response => {
@@ -722,10 +746,47 @@ export default {
               total_price: 0,
               in_storage_quantity: p.in_storage_quantity
             }
-            this.calculateTotalPrice(pd)
-            this.temp.products.push(pd);
+            this.calculateTotalPrice(pd, 2)
+            this.temp.products.push(pd)
           })
           this.calculateOrderPrice()
+        })
+        .catch(err => {
+          console.log(err)
+          this.$message({
+            message: '作弊工具出问题了，请联系徐神检查',
+            type: 'error'
+          })
+        })
+    },
+    addSaleTestingProducts(type) {
+      this.listLoading = true
+      ProductAPI.getTestingProductsByType(type)
+        .then(response => {
+          response.forEach(pType => {
+            pType.sub_type.forEach(subType => {
+              subType.products.forEach(p => {
+                let pd = {
+                  product_type: pType,
+                  product_sub_type: subType,
+                  product_id: p.id,
+                  product: p,
+                  quantity: 1,
+                  promotion_quantity: 0,
+                  cost: p.cost,
+                  price: p.price,
+                  discount_rate: p.resaler_discount,
+                  note: undefined,
+                  key: this.marketingOrderTemp.products.length + 1,
+                  total_price: 0,
+                  in_storage_quantity: p.in_storage_quantity
+                }
+                this.calculateTotalPrice(pd, 1)
+                this.marketingOrderTemp.products.push(pd);
+              })
+            })
+          })
+          this.listLoading = false
         })
         .catch(err => {
           console.log(err)
@@ -747,24 +808,14 @@ export default {
         }
       })
     },
-    calculateTotalPrice(item) {
-      // console.log(item)
-      // if (parseFloat(item.quantity) + parseFloat(item.promotion_quantity) > parseFloat(item.in_storage_quantity)) {
-      //   let total_out = parseFloat(item.quantity) + parseFloat(item.promotion_quantity)
-      //   let str = item.product.title + ' 库存仅为 >' + parseFloat(item.in_storage_quantity) +'<, 当前选择出库数量总数为 ' + total_out +'，请检查出库数量'
-      //   this.$alert(str, '失败', {
-      //     confirmButtonText: '确定',
-      //     callback: action => {
-      //       item.quantity = 0
-      //       item.promotion_quantity = 0
-      //     }
-      //   });
-      // } else {
-        item.total_price = roundToTwo(roundToTwo((item.price) * parseFloat(item.discount_rate)) * item.quantity)
+    calculateTotalPrice(item, storageId) {
+      if (this.checkIfQuantityIsEnough(item, storageId)) {
+        item.total_price = roundToOne(roundToOne((item.price) * parseFloat(item.discount_rate)) * item.quantity)
+        console.log(roundToTwo((item.price) * parseFloat(item.discount_rate)))
         item.total_cost = roundToTwo(item.cost * (parseFloat(item.quantity) + parseFloat(item.promotion_quantity)))
         item.total_profit = roundToTwo(item.total_price - item.total_cost)
         this.calculateOrderPrice()
-      // }
+      }
     },
     calculateOrderPrice() {
       let total = 0
@@ -831,7 +882,8 @@ export default {
           })
         } else {
           let data = {
-            sales_data: {
+            inventory_type: 12,
+            order_data: {
               manual_discount: this.temp.manual_discount,
               order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
               order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
@@ -846,6 +898,7 @@ export default {
               payment_company_id: this.temp.payment_company.id
             },
             product_data: [],
+            storage: 2
           }
           this.temp.products.forEach(p => {
             let d = {
@@ -913,17 +966,17 @@ export default {
         this.marketingOrderTemp.products.forEach(p => {
           if (parseFloat(p.quantity) + parseFloat(p.promotion_quantity) === 0) {
             failCheck = true
+            this.$message({
+              message: '有一款或多款产品出库总数为0，请仔细检查',
+              type: 'error'
+            })
           }
         })
 
-        if (failCheck) {
-          this.$message({
-            message: '有一款或多款产品出库总数为0，请仔细检查',
-            type: 'error'
-          })
-        } else {
+        if (!failCheck) {
           let data = {
-            marketing_order_data: {
+            inventory_type: 14,
+            order_data: {
               department: this.marketingOrderTemp.department.name,
               client_name: this.marketingOrderTemp.client_name,
               shipping_address: this.marketingOrderTemp.shipping_address,
@@ -933,6 +986,7 @@ export default {
               note: this.marketingOrderTemp.note
             },
             product_data: [],
+            storage: 1
           }
           this.marketingOrderTemp.products.forEach(p => {
             let d = {
@@ -1074,7 +1128,7 @@ export default {
             let found = false
             let newData = null
             bulkData.forEach(bd => {
-              if (d.contact === bd.marketing_order_data.contact) {
+              if (d.contact === bd.order_data.contact) {
                 found = true
                 newData = bd
               }
@@ -1086,14 +1140,17 @@ export default {
             }
             if (!found) {
               newData = {
-                marketing_order_data: {
+                inventory_type: 14,
+                order_data: {
                   department: this.marketingOrderTemp.department.name,
                   client_name: d.name,
                   shipping_address: d.address,
                   contact: d.contact,
-                  added_by: this.id
+                  added_by: this.id,
+                  date: moment(this.marketingOrderTemp.date).format('YYYY-MM-DD'),
                 },
-                product_data: [pd]
+                product_data: [pd],
+                storage: 1
               }
               bulkData.push(newData)
             } else {
@@ -1252,7 +1309,7 @@ export default {
   width: 120px;
 }
 .input-title-short {
-  width: 80px;
+  width: 70px;
 }
 .input-title-extra-long {
   width: 150px;
@@ -1262,7 +1319,7 @@ export default {
   margin-left: 10px;
 }
 .inventory-in-input-short {
-  width: 80px; 
+  width: 70px; 
   margin-left: 10px;
 }
 .inventory-in-input-extra {
@@ -1272,6 +1329,9 @@ export default {
 .inventory-in-input-line {
   width: 250px; 
   margin-left: 10px;
+}
+.cheat-button {
+  margin-bottom: 10px;
 }
 
 @media (max-width:550px) {

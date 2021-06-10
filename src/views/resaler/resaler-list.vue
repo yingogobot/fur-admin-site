@@ -1,5 +1,16 @@
 <template>
   <div class="app-container">
+    <div class="filter-container">
+      <h2>筛选结果</h2>
+      <el-input v-model="listQuery.name" placeholder="渠道名称" clearable style="width: 150px; margin-left: 15px;" class="filter-item"/>
+      <el-select v-model="listQuery.area_id" value-key="id" placeholder="地区" 
+        clearable style="width: 200px;" class="filter-item" >
+        <el-option v-for="item in resalerAreas" :key="item.id" :label="item.title" :value="item.id" />
+      </el-select>
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
+        搜索
+      </el-button>
+    </div>
     <div>
     <h2 class="title">分销渠道</h2>
       <el-button v-if="role === 7 || role === 1" class="create-button" style="width: 200px; margin-left: 10px;" type="success" icon="el-icon-edit" @click="handleCreate">
@@ -70,7 +81,7 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="role === 7" label="操作" width="300px" align="center">
+      <el-table-column v-if="role === 7 || role === 1" label="操作" width="300px" align="center">
         <template slot-scope="{row}">
           <el-button type="primary" plain @click="editResaler(row)">编辑</el-button>
           <el-button type="danger" plain @click="deleteResaler(row)">删除</el-button>
@@ -202,10 +213,15 @@ export default {
         })
     },
     getCount() {
-      ResalerAPI.getResalersCount()
+      ResalerAPI.getResalersCount(this.listQuery)
         .then(response => {
           this.total = response.total
         })
+    },
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getResalers()
+      this.getCount()
     },
     getAreas() {
       this.listLoading = true

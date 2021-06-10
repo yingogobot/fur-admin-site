@@ -46,7 +46,7 @@ export default {
   },
   methods: {
     version() {
-      return '2.5 build 5'
+      return '2.86 build 4'
     },
     toggleSideBar() {
       this.$store.dispatch('app/toggleSideBar')

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="role === 1" class="app-container">
+  <div v-if="role === 1 || role === 6" class="app-container">
     <div class="filter-container">
       <h2 style="display: inline-block;" >选择月份</h2>
       <el-date-picker
@@ -87,7 +87,6 @@
 import errGif from '../../assets/images/no-access.jpg'
 import SalesAPI from '@/api/sales.js'
 import waves from '@/directive/waves' // waves directive
-import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 import moment from 'moment'

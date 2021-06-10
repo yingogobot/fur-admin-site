@@ -66,6 +66,19 @@ module.exports = merge(common, {
                   },
               ],
           },
+          {
+            test: /\.(csv|xlsx|xls)$/,
+            use: [
+                {
+                    loader: 'file-loader',
+                    options: {
+                        limit: 5000,
+                        name: `files/[name].[ext]`
+                        // publicPath: '../files'
+                    },
+                },
+            ],
+        }
       ],
   },
   plugins: [
@@ -77,9 +90,11 @@ module.exports = merge(common, {
         MINI_FD: 4,
         LARGE_FD: 8,
         TREAT: 5,
-        DOG_FF: 0,
-        CAT_FF: 0,
-        CAT_SIP: 0
+        DOG_FF: 16,
+        CAT_FF: 17,
+        CAT_SIP: 18,
+        CAT_FOOD_CAN: 21,
+        DUN_DUN_CREAM: 36
       },
       DEBUG: true
     })

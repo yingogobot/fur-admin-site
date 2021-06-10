@@ -8,9 +8,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  getResalersCount() {
+  getResalersCount(data) {
     return new Promise((resolve, reject) => {
-      $.post('resaler/get_count')
+      $.post('resaler/get_count', data)
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

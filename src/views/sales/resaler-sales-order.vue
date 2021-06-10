@@ -38,6 +38,10 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
         搜索
       </el-button>
+
+      <downloadexcel v-if="dataForExcel && dataForExcel.length > 0" :data="dataForExcel" class="downloadExcelBtn" :before-finish="finishDownload">
+        导出数据到Excel
+      </downloadexcel>
     </div>
 
     <h2>销售详情</h2>
@@ -160,11 +164,6 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="role === 1" label="编辑订单" width="150px" align="center">
-        <template slot-scope="scope">
-          <el-button type="warning" plain @click="editSale(scope.row)">编辑</el-button>
-        </template>
-      </el-table-column>
     </el-table>
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getAllSales" />
@@ -180,20 +179,21 @@ import MemberAPI from '@/api/member'
 import UserAPI from '@/api/user'
 
 import waves from '@/directive/waves' // waves directive
-import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 import moment from 'moment'
+import downloadexcel from "vue-json-excel";
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
+  components: { Pagination, downloadexcel },
   directives: { waves },
   filters: {},
   data() {
     return {
       tableKey: 0,
       sales: null,
+      dataForExcel: null,
       total: 0,
       listLoading: true,
       productTypes: [],
@@ -281,6 +281,7 @@ export default {
           this.sales = response
           this.listLoading = false
           this.calculateRowSpan()
+          this.prepareExcelData()
         })
         .catch(err => {
           console.log(err)
@@ -300,6 +301,33 @@ export default {
         .then(response => {
           this.total = response.total
         })
+    },
+    prepareExcelData() {
+      this.dataForExcel = []
+      this.sales.forEach(s => {
+        let found = false
+        this.dataForExcel.forEach(t => {
+          if (t.id === s.id) {
+            found = true
+          }
+        })
+
+        if (!found) {
+          let d = {
+            id: s.id,
+            region_title: s.region_title,
+            region_manager_atm_name: s.region_manager_atm_name,
+            area_title: s.area_title,
+            area_manager_atm_name: s.area_manager_atm_name,
+            resaler_name: s.name,
+            order_total_price: s.order_total_price,
+            order_total_profit: s.order_total_profit,
+            deliver_tracking_code: s.deliver_tracking_code,
+            note: s.note
+          }
+          this.dataForExcel.push(d)
+        }
+      })
     },
     getAreas(regionId) {
       console.log(regionId)
@@ -392,31 +420,6 @@ export default {
         }
       })
     },
-    calculateTotalPrice(item) {
-      item.total_price = roundToTwo((item.price - parseFloat(item.discount)) * parseFloat(item.discount_rate) * item.quantity)
-      item.total_cost = roundToTwo(item.cost * item.quantity)
-      item.total_profit = roundToTwo(item.total_price - item.total_cost)
-      this.calculateOrderPrice()
-    },
-    calculateOrderPrice() {
-      let total = 0
-      let total_product_cost = 0
-      // if (this.temp.products && this.temp.products.length > 0) {
-        this.temp.products.forEach(p => {
-          total = total + p.total_price;
-          total_product_cost = total_product_cost + p.total_cost
-        })
-      // }
-      // if (this.temp.selectedProducts && this.temp.selectedProducts.length > 0) {
-        this.temp.selectedProducts.forEach(p => {
-          total = total + p.total_price;
-          total_product_cost = total_product_cost + p.total_cost
-        })
-      // }
-      this.temp.order_total_price = roundToTwo( parseFloat(total) * parseFloat(this.temp.discount) + parseFloat(this.temp.shipping_cost) - parseFloat(this.temp.coupon) - parseFloat(this.temp.manual_discount));
-      this.temp.order_total_profit = roundToTwo(parseFloat(this.temp.order_total_price) - parseFloat(total_product_cost) - parseFloat(this.temp.shipping_cost) - parseFloat(this.temp.other_cost));
-
-    },
     objectSpanMethod({ row, column, rowIndex, columnIndex }) {
       if (columnIndex < 7 || (columnIndex >= 16 && columnIndex <= 23)) {
         let data = {
@@ -441,157 +444,11 @@ export default {
       this.getAllSales()
       this.getSalesCount()
     },
-    addMoreProduct() {
-      this.temp.products.push({
-        product_type: undefined,
-        product_sub_type: undefined,
-        product_id: '',
-        quantity: undefined,
-        cost: undefined,
-        price: undefined,
-        discount: 0,
-        discount_rate: 1.0,
-        note: undefined,
-        key: this.temp.products.length + 1,
-        total_price: 0
-      });
-    },
-    removeProduct(itemIndex) {
-      this.$delete(this.temp.products, itemIndex)
-      this.calculateOrderPrice()
-    },
-    addAllProductBySubType(subType) {
-      let id = 0
-      let discount = 1
-      if (subType === 1) { //小包冻干taobao
-        id = process.env.PRODUCT_SUB_TYPE_ID.MINI_FD
-        discount = 0.9
-      } else if (subType === 2) { //大包冻干
-        id = process.env.PRODUCT_SUB_TYPE_ID.LARGE_FD
-      } else if (subType === 3) { //肉干
-        id = process.env.PRODUCT_SUB_TYPE_ID.TREAT
-      } else if (subType === 4) { //犬用鲜粮
-        id = process.env.PRODUCT_SUB_TYPE_ID.DOG_FF
-      } else if (subType === 5) { //猫用鲜粮
-        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_FF
-      } else if (subType === 6) { //猫条
-        id = process.env.PRODUCT_SUB_TYPE_ID.CAT_SIP
-      }
-      ProductAPI.getAllProductsBySubType(id)
-        .then(response => {
-          response.sub_type[0].products.forEach(p => {
-            let pd = {
-              product_type: response,
-              product_sub_type: response.sub_type[0],
-              product_id: p.id,
-              product: p,
-              quantity: 1,
-              cost: p.cost,
-              price: p.price,
-              discount: 0,
-              discount_rate: discount,
-              note: undefined,
-              key: this.temp.products.length + 1,
-              total_price: 0
-            }
-            this.calculateTotalPrice(pd)
-            this.temp.products.push(pd);
-          })
-          this.calculateOrderPrice()
-        })
-        .catch(err => {
-          this.$message({
-            message: '作弊工具出问题了，请联系徐神检查',
-            type: 'error'
-          })
-        })
-    },
-    handleCreate() {
-      this.dialogFormVisible = true
-      this.formType = 1
-      this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
-      })
-    },
     clearFullyPaid() {
       this.listQuery.fully_paid = undefined
     },
     clearSpecialType() {
       this.listQuery.special_type = undefined
-    },
-    editSale(item) {
-      let data = {
-        id: item.id,
-        sales_type: item.sales_type_id,
-        order_total_price: item.order_total_price,
-        order_total_profit: item.order_total_profit,
-        coupon: item.coupon,
-        discount: item.discount,
-        manual_discount: item.manual_discount,
-        shipping_cost: item.shipping_cost,
-        other_cost: item.other_cost,
-        member_id: item.member_id,
-        sales_channel: {
-          id: item.sales_channel_id,
-          title: item.sales_channel_title
-        },
-        resaler: {
-          id: item.resaler_id,
-          name: item.resaler_name
-        },
-        event: {
-          id: item.event_id,
-          title: item.event_title
-        },
-        note: item.note,
-        fully_paid: item.fully_paid === 1 ? true : false,
-        special_type: item.special_type  === 1 ? true : false,
-        date: item.date,
-        member: {
-          name: item.member_name,
-          cellphone: item.member_cellphone,
-          searchValue: item.member_cellphone + ' | ' + item.member_name
-        },
-        products: [],
-        selectedProducts: [],
-        deletedProducts:[]
-      }
-      this.sales.forEach(i => {
-        if (i.id === item.id) {
-          data.selectedProducts.push({
-            sales_product_id: i.sales_product_id,
-            title: i.product_title,
-            product_type: {
-              id: i.product_type_id,
-              title: i.product_type
-            },
-            product_sub_type: {
-              id: i.product_sub_type_id,
-              title: i.product_sub_type
-            },
-            product_id: i.product_id,
-            quantity: i.quantity,
-            cost: i.per_item_cost_atm,
-            price: i.per_item_price_atm,
-            discount: i.per_product_discount,
-            discount_rate: i.per_product_discount_ratio,
-            product_note: i.product_note,
-            key: i.product_id,
-            total_price: i.total_price,
-            total_cost: i.total_cost,
-            total_profit: i.total_profit,
-          })
-        }
-      })
-      this.temp = data
-      this.dialogFormVisible = true
-      this.formType = 2
-      this.calculateOrderPrice()
-    },
-    deleteSelectedProduct(itemIndex) {
-      this.temp.deletedProducts.push(this.temp.selectedProducts[itemIndex])
-      this.$delete(this.temp.selectedProducts, itemIndex)
-      this.calculateOrderPrice()
     },
     searchMember(query) {
       this.isSearchingMember = true
@@ -617,205 +474,8 @@ export default {
       this.temp.member_name = item.name
       this.temp.member_cellphone = item.cellphone
     },
-    addSalesOrder() {
-      this.$confirm('确定添加?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.sendAddSalesRequest()
-      }).catch(() => {        
-      });
-    },
-    sendAddSalesRequest() {
-      let that = this
-      if (!this.temp.sales_type) {
-        this.$message({
-          message: '入库类型必须填写',
-          type: 'error'
-        })
-      } else if (this.temp.products.length === 0) {
-        this.$message({
-          message: '至少要有一个或以上的产品入库',
-          type: 'error'
-        })
-      } else {
-        let data = {
-          sales_data: {
-            type: this.temp.sales_type,
-            coupon: this.temp.coupon,
-            discount: this.temp.discount,
-            manual_discount: this.temp.manual_discount,
-            shipping_cost: this.temp.shipping_cost,
-            other_cost: this.temp.other_cost,
-            order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
-            order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
-            sales_channel_id: this.temp.sales_channel ? this.temp.sales_channel.id : null,
-            member_id: this.temp.member ? this.temp.member.id : null,
-            resaler_id: this.temp.resaler ? this.temp.resaler.id : null,
-            event_id: this.temp.event ? this.temp.event.id : null,
-            fully_paid: this.temp.fully_paid ? 1 : 0,
-            special_type: this.temp.special_type ? 1 : 0,
-            added_by: this.id,
-            date: moment(this.temp.date).format('YYYY-MM-DD'),
-            note: this.temp.note
-          },
-          product_data: [],
-        }
-        this.temp.products.forEach(p => {
-          let d = {
-            product_id: p.product_id,
-            quantity: p.quantity,
-            per_item_cost_atm: p.cost,
-            per_item_price_atm: p.price,
-            per_product_discount: p.discount,
-            per_product_discount_ratio: p.discount_rate,
-            total_price: p.total_price,
-            total_cost: p.total_cost,
-            total_profit: p.total_profit,
-            note: p.note,
-          }
-          data.product_data.push(d)
-        })
-
-        this.listLoading = true
-        SalesAPI.addNewSalesRequest(data)
-          .then(response => {
-            that.listLoading = false
-            this.$alert('库存添加成功', '成功', {
-              confirmButtonText: '确定',
-              callback: action => {
-                this.page = 1
-                this.getAllSales()
-                this.dialogFormVisible = false
-                this.setDataBackToDefault()
-              }
-            });
-          })
-          .catch(err => {
-            that.$message({
-              message: '添加库存失败，请联系徐神检查',
-              type: 'error'
-            })
-            that.listLoading = false
-          })
-      }
-    },
-    updateSalesOrder() {
-      this.$confirm('确定所有的修改?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.sendUpdateSalesRequest()
-      }).catch(() => {        
-      });
-    },
-    sendUpdateSalesRequest() {
-      let that = this
-      let data = {
-        sales_data: {
-          id: this.temp.id,
-          type: this.temp.sales_type,
-          coupon: this.temp.coupon,
-          discount: this.temp.discount,
-          manual_discount: this.temp.manual_discount,
-          shipping_cost: this.temp.shipping_cost,
-          other_cost: this.temp.other_cost,
-          order_total_price: this.temp.order_total_price ? this.temp.order_total_price : 0,
-          order_total_profit: this.temp.order_total_profit ? this.temp.order_total_profit : 0,
-          sales_channel_id: this.temp.sales_channel.id,
-          member_id: this.temp.member.id,
-          resaler_id: this.temp.resaler.id,
-          event_id: this.temp.event.id,
-          fully_paid: this.temp.fully_paid ? 1 : 0,
-          special_type: this.temp.special_type ? 1 : 0,
-          added_by: this.id,
-          date: moment(this.temp.date).format('YYYY-MM-DD'),
-          note: this.temp.note
-        },
-        add_products: [],
-        delete_products: []
-      }
-      that.temp.products.forEach(p => {
-        if (p.product_id) {
-          let d = {
-            product_id: p.product_id,
-            quantity: p.quantity,
-            per_item_cost_atm: p.cost,
-            per_item_price_atm: p.price,
-            per_product_discount: p.discount,
-            per_product_discount_ratio: p.discount_rate,
-            total_price: p.total_price,
-            total_cost: p.total_cost,
-            total_profit: p.total_profit,
-            note: p.note,
-          }
-          data.add_products.push(d)
-        }
-      })
-
-      that.temp.deletedProducts.forEach(p => {
-        data.delete_products.push(p.sales_product_id)
-      })
-      console.log(data)
-      that.listLoading = true
-      SalesAPI.updateSales(data)
-        .then(response => {
-          that.listLoading = false
-          that.$alert('销售订单修改成功', '成功', {
-            confirmButtonText: '确定',
-            callback: action => {
-              that.page = 1
-              that.getAllSales()
-              that.dialogFormVisible = false
-              this.setDataBackToDefault()
-            }
-          });
-        })
-        .catch(err => {
-          that.$message({
-            message: '销售订单修改失败，请联系徐神检查',
-            type: 'error'
-          })
-          that.listLoading = false
-        })
-    },
-    setDataBackToDefault() {
-      this.temp = {
-        id: undefined,
-        sales_type: undefined,
-        products: [{
-            product_type: '',
-            product_sub_type: '',
-            product_id: '',
-            quantity: 0,
-            cost: undefined,
-            price: undefined,
-            discount: 0,
-            discount_rate: 1,
-            note: undefined,
-            key: 1,
-            total_price: 0
-          }
-        ],
-        selectedProducts:[],
-        deletedProducts: [],
-        order_total_price: 0,
-        order_total_profit: 0,
-        coupon: 0,
-        discount: 1,
-        manual_discount: 0,
-        shipping_cost: 5,
-        other_cost: 0,
-        sales_channel: undefined,
-        resaler_id: undefined,
-        event_id: undefined,
-        note: undefined,
-        fully_paid: true,
-        special_type: false,
-        date: new Date()
-      }
+    finishDownload(){
+        alert('下载完成');
     }
   }
 }
@@ -881,5 +541,14 @@ export default {
   }
   .inventory-in-input-line {
     width: 250px; 
+  }
+  .downloadExcelBtn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    color: #FFFFFF;
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    width: 150px;
   }
 </style>

@@ -41,7 +41,9 @@ var plugins = [
         TREAT: 5,
         DOG_FF: 16,
         CAT_FF: 17,
-        CAT_SIP: 18
+        CAT_SIP: 18,
+        CAT_FOOD_CAN: 21,
+        DUN_DUN_CREAM: 36
       },
       DEBUG: false
     })

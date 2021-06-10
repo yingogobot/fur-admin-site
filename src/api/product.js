@@ -29,9 +29,9 @@ export default {
         .catch((err) => reject(err))
     })
   },
-  getAllProductType() {
+  getAllProductType(storageType) {
     return new Promise((resolve, reject) => {
-      $.post('product/get_all_product_type')
+      $.post('product/get_all_product_type', { storage_type: storageType })
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
@@ -81,6 +81,13 @@ export default {
   addProductSubType(data) {
     return new Promise((resolve, reject) => {
       $.post('product/add_product_sub_type', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  getTestingProductsByType(type) {
+    return new Promise((resolve, reject) => {
+      $.post('product/get_testing_product_by_type', { type: type })
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })

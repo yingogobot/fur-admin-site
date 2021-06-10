@@ -11,8 +11,8 @@
         end-placeholder="结束月份">
       </el-date-picker>
       <el-input v-model="listQuery.id" placeholder="订单编号" clearable style="width: 150px; margin-left: 15px;" class="filter-item"/>
-      <el-select v-model="listQuery.deparmtent" placeholder="申请部门" clearable style="width: 150px; margin-left: 15px;" class="filter-item" @change="getAreas(listQuery.region_id)">
-        <el-option v-for="item in departments" :key="item.id" :label="item.name" :value="item.id" />
+      <el-select v-model="listQuery.deparmtent" placeholder="申请部门" clearable style="width: 150px; margin-left: 15px;" class="filter-item">
+        <el-option v-for="item in departments" :key="item.id" :label="item.name" :value="item.name" />
       </el-select>
       <el-input v-model="listQuery.client_name" placeholder="客户姓名" clearable style="width: 150px; margin-left: 15px;" class="filter-item"/>
       <el-input v-model="listQuery.shipping_address" placeholder="邮寄地址" clearable style="width: 150px; margin-left: 15px;" class="filter-item "/>
@@ -20,6 +20,22 @@
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter" style="width: 100px; margin-left: 15px;">
         搜索
       </el-button>
+      <downloadexcel v-if="orders && orders.length > 0" :data="orders" class="downloadExcelBtn" :before-finish="finishDownload">
+        导出数据到Excel
+      </downloadexcel>
+    </div>
+
+    <div>
+      <div style="display: block; margin-bottom: 20px;">
+        <h3 style="display: inline-block;"> 批量发货 上传Excel </h3>
+        <input style="margin-left: 20px;" type="file" @change="onReadExcelFileChange" ref="fileInput"/>
+        <el-button @click="clearExcelFileInput()">
+          清除文件
+        </el-button>
+        <el-button v-if="bulkInputData && bulkInputData.length > 0" @click="submitBulkInput()">
+          批量上传数据已经读取 {{bulkInputData.length}}条 确认提交
+        </el-button>
+      </div>
     </div>
 
     <h2>需要审核的订单</h2>
@@ -102,7 +118,7 @@
           <span>{{ row.note }}</span>
         </template>
       </el-table-column>
-      <el-table-column v-if="role === 7 || role === 1 || role === 8 || role === 9 || role === 10" label="审核订单" width="300px" align="center">
+      <el-table-column label="审核订单" width="300px" align="center">
         <template slot-scope="{row}">
           <el-button v-if="id === row.added_by_id" type="danger" plain @click="deleteOrder(row)">取消订单</el-button>
           <el-button v-if="role === 7 || role === 1" type="primary" plain @click="updateDeliveryCode(row)">发货</el-button>
@@ -115,18 +131,19 @@
 </template>
 
 <script>
+import readXlsxFile from 'read-excel-file'
+import downloadexcel from "vue-json-excel";
+
 import OrderAPI from '@/api/order.js'
-import UserAPI from '@/api/user'
 
 import waves from '@/directive/waves' // waves directive
-import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 import moment from 'moment'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
+  components: { Pagination, downloadexcel },
   directives: { waves },
   filters: {},
   data() {
@@ -145,7 +162,7 @@ export default {
         contact: undefined,
         is_delivered: 0
       },
-      formType: 0,
+      bulkInputData: undefined,
       rowSpans: null,
       departments: [
         {
@@ -277,13 +294,13 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        this.sendDeleteOrderRequest(item.id)
+        this.sendDeleteOrderRequest(item.id, item.inventory_id)
       }).catch(() => {   
       });
     },
-    sendDeleteOrderRequest(orderId) {
+    sendDeleteOrderRequest(orderId, inventoryId) {
       this.listLoading = true
-      OrderAPI.deleteMarketingOrder(orderId)
+      OrderAPI.deleteMarketingOrder(orderId, inventoryId)
         .then(response => {
           this.listLoading = false
           this.$alert('删除成功', '成功', {
@@ -313,7 +330,7 @@ export default {
             cancelButtonText: '取消',
             type: 'warning'
           }).then(() => {
-            this.sendUpdateSalesDeliveryRequest(item.id, value)
+            this.sendUpdateSalesDeliveryRequest(item.id, item.inventory_id, value)
           }).catch(() => {   
           });
         }).catch(() => {
@@ -323,9 +340,14 @@ export default {
           });       
         });
     },
-    sendUpdateSalesDeliveryRequest(orderId, code) {
+    sendUpdateSalesDeliveryRequest(orderId, inventoryId, code) {
       this.listLoading = true
-      OrderAPI.updateMarketingOrderDeliveryCode({ order_id: orderId, delivery_code: code })
+      let data = {
+        order_id: orderId, 
+        delivery_code: code,
+        inventory_id : inventoryId
+      }
+      OrderAPI.updateMarketingOrderDeliveryCode(data)
         .then(response => {
           this.listLoading = false
           this.$alert('订单修改成功', '成功', {
@@ -344,6 +366,83 @@ export default {
           })
           this.listLoading = false
         })
+    },
+    onReadExcelFileChange(event) {
+      let xlsxfile = event.target.files ? event.target.files[0] : null;
+      this.bulkInputData = []
+      let allEntries = []
+      readXlsxFile(xlsxfile).then((rows) => {
+        allEntries = []
+        for (let index = 1; index < rows.length; index++) {
+          const row = rows[index];
+          let data = {
+            id: row[0],
+            tracking_code: row[1]
+          }
+          allEntries.push(data)
+        }
+        if (allEntries.length === 0) {
+          this.$alert('读取文件失败或文件为空', '失败', {
+            confirmButtonText: '确定'
+          });
+        } else {
+          this.bulkInputData = allEntries
+          console.log(this.bulkInputData)
+          this.$alert('文件读取成功，数据已经导入。请检查后提交', '成功', {
+            confirmButtonText: '确定'
+          });
+        }
+      })
+    },
+    clearExcelFileInput() {
+      this.$refs.fileInput.value = null
+      this.bulkInputData = []
+    },
+    submitBulkInput() {
+      this.$confirm('是否确定批量发货', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.sendBulkInputDataRequest()
+      }).catch(() => {   
+        this.$message({
+          message: '失败，请联系徐神检查',
+          type: 'error'
+        })
+      });
+    },
+    sendBulkInputDataRequest() {
+      if (!this.bulkInputData || this.bulkInputData.length === 0) {
+        this.$message({
+          message: '没有批量上传数据，请检查数据源',
+          type: 'error'
+        })
+      } else {
+        this.listLoading = true
+        OrderAPI.updateBulkMarketingOrderDeliveryCode(this.bulkInputData)
+          .then(response => {
+            this.listLoading = false
+            this.$alert('批量发货成功', '成功', {
+              confirmButtonText: '确定',
+              callback: action => {
+                this.$refs.fileInput.value = null
+                this.getAllInReviewMarketingOrders()
+                this.getAllInReviewMarketingOrdersCount()
+              }
+            });
+          })
+          .catch(err => {
+            this.$message({
+              message: '下单失败，请联系徐神检查',
+              type: 'error'
+            })
+            this.listLoading = false
+          })
+      }
+    },
+    finishDownload(){
+        alert('下载完成');
     }
   }
 }
@@ -359,5 +458,14 @@ export default {
     color: white;
     font-size: 12px;
     width: 100px;
+  }
+  .downloadExcelBtn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 4px;
+    color: #FFFFFF;
+    background-color: #2c3e50;
+    border-color: #2c3e50;
+    width: 150px;
   }
 </style>

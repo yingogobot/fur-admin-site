@@ -11,7 +11,8 @@ import salesRouter from './modules/sales'
 import memberRouter from './modules/member'
 import resalerRouter from './modules/resaler'
 import reportRouter from './modules/report'
-import inventoryRouter from './modules/inventory'
+import AStorageInventoryRouter from './modules/a_storage_inventory'
+import BStorageInventoryRouter from './modules/b_storage_inventory'
 import memberSalesDetail from '@/views/member/member-sales-detail'
 import User from '@/store/modules/user'
 
@@ -88,7 +89,8 @@ export const constantRoutes = [
       }
     ]
   },
-  inventoryRouter,
+  AStorageInventoryRouter,
+  BStorageInventoryRouter,
   salesRouter,
   resalerRouter,
   memberRouter,

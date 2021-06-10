@@ -13,12 +13,6 @@ const inventoryRouter = {
   },
   children: [
     {
-      path: 'sales-order',
-      component: () => import('@/views/sales/sales-order'),
-      name: 'Histroy Sales Order',
-      meta: { title: '历史销售记录(即将删除)', role: [1] }
-    },
-    {
       path: 'direct-sales-order',
       component: () => import('@/views/sales/direct-sales-order'),
       name: 'Direct Sales Order',

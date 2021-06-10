@@ -315,6 +315,7 @@ export default {
     },
     getMembers() {
       this.listLoading = true
+      console.log(this.listQuery)
       MemberAPI.getAllMembers(this.listQuery)
         .then(response => {
           this.members = response

@@ -104,7 +104,6 @@ import errGif from '../../assets/images/no-access.jpg'
 
 import SalesAPI from '@/api/sales.js'
 import waves from '@/directive/waves' // waves directive
-import { roundToTwo } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import { mapGetters } from 'vuex'
 import moment from 'moment'

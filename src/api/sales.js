@@ -78,6 +78,13 @@ export default {
         .catch((err) => reject(err))
     })
   },
+  deleteSales(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/delete_sales', data)
+        .then((results) => resolve())
+        .catch((err) => reject(err))
+    })
+  },
   getSalesDetailForMember(memberId) {
     return new Promise((resolve, reject) => {
       $.post('sales/get_sales_detail', {member_id: memberId})
@@ -119,5 +126,26 @@ export default {
         .then((results) => resolve(results))
         .catch((err) => reject(err))
     })
-  }  
+  },
+  requestOrderPriceChange(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/request_order_price_change', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  confirmOrderPriceChange(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/confirm_order_price_change', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  },
+  cancelOrderPriceChange(data) {
+    return new Promise((resolve, reject) => {
+      $.post('sales/cancel_order_price_change', data)
+        .then((results) => resolve(results))
+        .catch((err) => reject(err))
+    })
+  }
 }
